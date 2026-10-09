@@ -1589,8 +1589,7 @@ $(document).ready(function(){
     $('#reportTypeFilter').on('change', function(){ updatePeriodOptions(); generateReportData(); });
     $('#reportPeriodFilter').on('change', generateReportData);
     $('#reportCustomerFilter').on('change', generateReportData);
-    $('#reportModuleFilter').on('change', function(){ updatePeriodOptions(); generateReportData(); });
-    
+    $('#reportModuleFilter').on('change', function(){ updatePeriodOptions(); generateReportData(); });    
     $('#statusFilter').on('change', function(){ var dt = dataTableInstances['billingTable']; if(dt) dt.column(8).search(this.value).draw(); });
     $('#proposeFilter').on('change', function(){ var dt = dataTableInstances['billingTable']; if(dt) dt.column(5).search(this.value).draw(); });
     $('#stabilityFilter').on('change', function(){ var dt = dataTableInstances['billingTable']; if(dt) dt.column(4).search(this.value).draw(); });
@@ -1854,8 +1853,7 @@ function setupCropper(){
 // ==================== BILLING TABLE ====================
 function renderBillingTable(){
     var month = $('#billingMonthSelect').val();
-    var data = allSheetsData.billing.filter(function(r){ return r[r.length-1] == month; });
-    
+    var data = allSheetsData.billing.filter(function(r){ return r[r.length-1] == month; });    
     var columns = [
         {data: null, title: 'Actions', render: function(data, type, row){
             var status = row[32] || '';
@@ -3158,6 +3156,7 @@ function renderIncomeTable(){
     var columns = [
         {data: null, title: 'Actions', render: function(d,t,row){
             return '<div class="btn-group-sm">'+
+                '<button class="btn btn-info btn-sm" onclick="viewRecord(\'income\','+row[0]+',null)"><i class="fas fa-eye"></i></button>'+
                 '<button class="btn btn-warning btn-sm" onclick="editIncome('+row[0]+')"><i class="fas fa-edit"></i></button>'+
                 '<button class="btn btn-danger btn-sm" onclick="deleteIncome('+row[0]+')"><i class="fas fa-trash"></i></button>'+
                 '</div>';
@@ -3352,6 +3351,7 @@ function renderExpensesTable(){
     var columns = [
         {data: null, title: 'Actions', render: function(d,t,row){
             return '<div class="btn-group-sm">'+
+                '<button class="btn btn-info btn-sm" onclick="viewRecord(\'expenses\','+row[0]+',null)"><i class="fas fa-eye"></i></button>'+
                 '<button class="btn btn-warning btn-sm" onclick="editExpenses('+row[0]+')"><i class="fas fa-edit"></i></button>'+
                 '<button class="btn btn-danger btn-sm" onclick="deleteExpenses('+row[0]+')"><i class="fas fa-trash"></i></button>'+
                 '</div>';
@@ -3793,21 +3793,30 @@ function deleteReading(id){
 }
 
 // ==================== VIEW RECORD ====================
-function viewRecord(type, id, month){
-    var data = type === 'billing' ? allSheetsData.billing : allSheetsData.payment;
-    if(!data || data.length <= 0){ Swal.fire('Error', 'Record not found', 'error'); return; }
-    
+function viewRecord(type, id, month) {
+    var data;
+    if (type === 'billing') data = allSheetsData.billing;
+    else if (type === 'payment') data = allSheetsData.payment;
+    else if (type === 'income') data = allSheetsData.income;
+    else if (type === 'expenses') data = allSheetsData.expenses;
+    else return;
+    if (!data || data.length <= 0) { Swal.fire('Error', 'Record not found', 'error'); return; }
     var record = null;
-    for(var i = 0; i < data.length; i++){
-        if(parseInt(data[i][0]) === parseInt(id) && parseInt(data[i][data[i].length-1]) === parseInt(month)){
-            record = data[i];
-            break;
+    for (var i = 0; i < data.length; i++) {
+        if (type === 'income' || type === 'expenses') {
+            if (parseInt(data[i][0]) === parseInt(id)) {
+                record = data[i];
+                break;
+            }
+        } else {
+            if (parseInt(data[i][0]) === parseInt(id) && parseInt(data[i][data[i].length - 1]) === parseInt(month)) {
+                record = data[i];
+                break;
+            }
         }
     }
-    
-    if(!record){ Swal.fire('Error', 'Record not found for the selected month', 'error'); return; }
+    if (!record) { Swal.fire('Error', 'Record not found', 'error'); return; }
     var content = getInvoiceContent(record, type);
-    
     Swal.fire({
         html: content,
         width: '950px',
@@ -3816,10 +3825,10 @@ function viewRecord(type, id, month){
         showDenyButton: true,
         confirmButtonText: 'Close',
         denyButtonText: 'Print'
-    }).then(function(r){ if(r.isDenied) printInvoice(record, type); });
+    }).then(function(r) { if (r.isDenied) printInvoice(record, type); });
 }
-
-function getInvoiceContent(record, type){
+        
+function getInvoiceContent(record, type) {
     var cn = companyDetails['Office Name'] || 'Billing Management System';
     var ca = companyDetails['Address'] || '';
     var cp = companyDetails['Phone no:'] || '';
@@ -3827,11 +3836,23 @@ function getInvoiceContent(record, type){
     var creg = companyDetails['Registration No:'] || '';
     var cemail = companyDetails['Email'] || '';
     var logo = companyDetails['Logo'] || 'https://drive.google.com/thumbnail?id=1LV7MlBAQgOvdZcAvcftHoEy7gMpvm5BE&sz=w800';
-    
-    if(type === 'billing'){
-        return '<div class="invoice-container"><div class="invoice-header"><div class="company-info"><img src="'+logo+'" alt="Logo" width="40"><div><h5 style="font-size:1rem;">'+cn+'</h5><p style="margin:0;font-size:10px;color:#6c757d;">'+ca+'<br>Phone: '+cp+(cpan?' | Pan: '+cpan:'')+(creg?' | Reg: '+creg:'')+(cemail?' | Email: '+cemail:'')+'</p></div></div><div class="invoice-title" style="font-size:18px;">BILL INVOICE</div></div><div style="margin-bottom:12px;"><div style="display:grid;grid-template-columns:1fr 1fr;gap:2px 15px;font-size:12px;"><div><strong>Bill ID:</strong> '+(record[0]||'')+'</div><div><strong>Meter:</strong> '+(record[1]||'')+'</div><div><strong>Customer:</strong> '+(record[2]||'')+'</div><div><strong>Stability:</strong> '+(record[3]||'')+'</div><div><strong>Propose:</strong> '+(record[4]||'')+'</div><div><strong>Date:</strong> '+formatDate(record[10])+'</div><div><strong>Status:</strong> <span class="badge '+(record[32]&&record[32].toLowerCase()==='complete'?'bg-success':'bg-warning')+'" style="font-size:10px;">'+(record[32]||'Pending')+'</span></div></div></div><table class="invoice-table"><thead><tr><th style="font-size:11px;">Description</th><th style="font-size:11px;">Current</th><th style="font-size:11px;">Gross</th></tr></thead><tbody><tr><td style="font-size:11px;">Reading No</td><td style="font-size:11px;">'+(record[12]||'0')+'</td><td style="font-size:11px;">'+(record[20]||'0')+'</td></tr><tr><td style="font-size:11px;">Consumption Fee</td><td style="font-size:11px;">Rs. '+parseFloat(record[14]||0).toFixed(2)+'</td><td style="font-size:11px;">Rs. '+parseFloat(record[21]||0).toFixed(2)+'</td></tr><tr><td style="font-size:11px;">Demand Fee</td><td style="font-size:11px;">Rs. '+parseFloat(record[15]||0).toFixed(2)+'</td><td style="font-size:11px;">Rs. '+parseFloat(record[22]||0).toFixed(2)+'</td></tr><tr><td style="font-size:11px;">Activity Fee</td><td style="font-size:11px;">Rs. '+parseFloat(record[16]||0).toFixed(2)+'</td><td style="font-size:11px;">Rs. '+parseFloat(record[23]||0).toFixed(2)+'</td></tr><tr><td style="font-size:11px;">Card Fee</td><td style="font-size:11px;">Rs. '+parseFloat(record[17]||0).toFixed(2)+'</td><td style="font-size:11px;">Rs. '+parseFloat(record[24]||0).toFixed(2)+'</td></tr><tr><td style="font-size:11px;">Other Fee</td><td style="font-size:11px;">Rs. '+parseFloat(record[18]||0).toFixed(2)+'</td><td style="font-size:11px;">Rs. '+parseFloat(record[25]||0).toFixed(2)+'</td></tr></tbody></table><div style="margin-top:6px;"><div style="display:grid;grid-template-columns:1fr 1fr;gap:2px 15px;font-size:12px;"><div><strong>Total Current:</strong> Rs. '+parseFloat(record[19]||0).toFixed(2)+'</div><div><strong>Total Gross:</strong> Rs. '+parseFloat(record[26]||0).toFixed(2)+'</div><div><strong>Late Fine:</strong> Rs. '+parseFloat(record[27]||0).toFixed(2)+'</div><div><strong>Net Total:</strong> <span style="font-size:16px;color:#4361ee;font-weight:700;">Rs. '+parseFloat(record[28]||0).toFixed(2)+'</span></div></div></div><div style="margin-top:10px;padding-top:10px;border-top:1px solid #dee2e6;font-size:12px;"><div style="display:grid;grid-template-columns:1fr 1fr;gap:2px 15px;"><div><strong>Balance Month:</strong> '+(record[33]||'0')+'</div><div><strong>Balance Bill:</strong> Rs. '+parseFloat(record[34]||0).toFixed(2)+'</div><div><strong>Balance Demand:</strong> Rs. '+parseFloat(record[35]||0).toFixed(2)+'</div><div><strong>Balance Activity:</strong> Rs. '+parseFloat(record[36]||0).toFixed(2)+'</div><div><strong>Paid Bill No:</strong> '+(record[37]||'N/A')+'</div><div><strong>Receiver:</strong> '+(record[39]||'N/A')+'</div></div><div><strong>Remarks:</strong> '+(record[38]||'N/A')+'</div></div><div class="invoice-footer">Generated by '+cn+' | '+new Date().toLocaleString()+'</div></div>';
+    var companyHeader = '<div class="invoice-header"><div class="company-info"><img src="' + logo + '" alt="Logo" width="40"><div><h5 style="font-size:1rem;">' + cn + '</h5><p style="margin:0;font-size:10px;color:#6c757d;">' + ca +
+        (cp ? '<br>Phone: ' + cp : '') +
+        (cpan ? ' | Pan: ' + cpan : '') +
+        (creg ? ' | Reg: ' + creg : '') +
+        (cemail ? ' | Email: ' + cemail : '') +
+        '</p></div></div>';
+    var footer = '<div class="invoice-footer">Generated by ' + cn + ' | ' + new Date().toLocaleString() + '</div></div>';
+    if (type === 'billing') {
+        return '<div class="invoice-container">' + companyHeader + '<div class="invoice-title" style="font-size:18px;">BILL INVOICE</div></div><div style="margin-bottom:12px;"><div style="display:grid;grid-template-columns:1fr 1fr;gap:2px 15px;font-size:12px;"><div><strong>Bill ID:</strong> ' + (record[0] || '') + '</div><div><strong>Meter:</strong> ' + (record[1] || '') + '</div><div><strong>Customer:</strong> ' + (record[2] || '') + '</div><div><strong>Stability:</strong> ' + (record[3] || '') + '</div><div><strong>Propose:</strong> ' + (record[4] || '') + '</div><div><strong>Date:</strong> ' + formatDate(record[10]) + '</div><div><strong>Status:</strong> <span class="badge ' + (record[32] && record[32].toLowerCase() === 'complete' ? 'bg-success' : 'bg-warning') + '" style="font-size:10px;">' + (record[32] || 'Pending') + '</span></div></div></div><table class="invoice-table"><thead><tr><th style="font-size:11px;">Description</th><th style="font-size:11px;">Current</th><th style="font-size:11px;">Gross</th></tr></thead><tbody><tr><td style="font-size:11px;">Reading No</td><td style="font-size:11px;">' + (record[12] || '0') + '</td><td style="font-size:11px;">' + (record[20] || '0') + '</td></tr><tr><td style="font-size:11px;">Consumption Fee</td><td style="font-size:11px;">Rs. ' + parseFloat(record[14] || 0).toFixed(2) + '</td><td style="font-size:11px;">Rs. ' + parseFloat(record[21] || 0).toFixed(2) + '</td></tr><tr><td style="font-size:11px;">Demand Fee</td><td style="font-size:11px;">Rs. ' + parseFloat(record[15] || 0).toFixed(2) + '</td><td style="font-size:11px;">Rs. ' + parseFloat(record[22] || 0).toFixed(2) + '</td></tr><tr><td style="font-size:11px;">Activity Fee</td><td style="font-size:11px;">Rs. ' + parseFloat(record[16] || 0).toFixed(2) + '</td><td style="font-size:11px;">Rs. ' + parseFloat(record[23] || 0).toFixed(2) + '</td></tr><tr><td style="font-size:11px;">Card Fee</td><td style="font-size:11px;">Rs. ' + parseFloat(record[17] || 0).toFixed(2) + '</td><td style="font-size:11px;">Rs. ' + parseFloat(record[24] || 0).toFixed(2) + '</td></tr><tr><td style="font-size:11px;">Other Fee</td><td style="font-size:11px;">Rs. ' + parseFloat(record[18] || 0).toFixed(2) + '</td><td style="font-size:11px;">Rs. ' + parseFloat(record[25] || 0).toFixed(2) + '</td></tr></tbody></table><div style="margin-top:6px;"><div style="display:grid;grid-template-columns:1fr 1fr;gap:2px 15px;font-size:12px;"><div><strong>Total Current:</strong> Rs. ' + parseFloat(record[19] || 0).toFixed(2) + '</div><div><strong>Total Gross:</strong> Rs. ' + parseFloat(record[26] || 0).toFixed(2) + '</div><div><strong>Late Fine:</strong> Rs. ' + parseFloat(record[27] || 0).toFixed(2) + '</div><div><strong>Net Total:</strong> <span style="font-size:16px;color:#4361ee;font-weight:700;">Rs. ' + parseFloat(record[28] || 0).toFixed(2) + '</span></div></div></div><div style="margin-top:10px;padding-top:10px;border-top:1px solid #dee2e6;font-size:12px;"><div style="display:grid;grid-template-columns:1fr 1fr;gap:2px 15px;"><div><strong>Balance Month:</strong> ' + (record[33] || '0') + '</div><div><strong>Balance Bill:</strong> Rs. ' + parseFloat(record[34] || 0).toFixed(2) + '</div><div><strong>Balance Demand:</strong> Rs. ' + parseFloat(record[35] || 0).toFixed(2) + '</div><div><strong>Balance Activity:</strong> Rs. ' + parseFloat(record[36] || 0).toFixed(2) + '</div><div><strong>Paid Bill No:</strong> ' + (record[37] || 'N/A') + '</div><div><strong>Receiver:</strong> ' + (record[39] || 'N/A') + '</div></div><div><strong>Remarks:</strong> ' + (record[38] || 'N/A') + '</div></div>' + footer;
+    } else if (type === 'payment') {
+        return '<div class="invoice-container">' + companyHeader + '<div class="invoice-title" style="font-size:18px;">PAYMENT RECEIPT</div></div><div style="margin-bottom:12px;"><div style="display:grid;grid-template-columns:1fr 1fr;gap:2px 15px;font-size:12px;"><div><strong>Receipt:</strong> ' + (record[2] || '') + '</div><div><strong>Customer ID:</strong> ' + (record[1] || '') + '</div><div><strong>Bill ID:</strong> ' + (record[9] || '') + '</div><div><strong>Customer:</strong> ' + (record[3] || '') + '</div><div><strong>Receiver:</strong> ' + (record[4] || 'N/A') + '</div><div><strong>Method:</strong> ' + (record[5] || '') + '</div><div><strong>Date:</strong> ' + formatDate(record[7]) + '</div><div><strong>Month:</strong> ' + (monthNames[record[8]] || '') + '</div></div></div><div style="text-align:center;padding:12px;background:#f8f9fa;border-radius:6px;margin:10px 0;"><div style="font-size:12px;color:#6c757d;">AMOUNT PAID</div><div style="font-size:28px;font-weight:700;color:#28a745;">Rs. ' + parseFloat(record[6] || 0).toFixed(2) + '</div></div>' + footer;
+    } else if (type === 'income') {
+        return '<div class="invoice-container">' + companyHeader + '<div class="invoice-title" style="font-size:18px;">INCOME RECEIPT</div></div><div style="margin-bottom:12px;"><div style="display:grid;grid-template-columns:1fr 1fr;gap:2px 15px;font-size:12px;"><div><strong>S.N.:</strong> ' + (record[0] || '') + '</div><div><strong>Date:</strong> ' + formatDate(record[1]) + '</div><div><strong>Customer ID:</strong> ' + (record[2] || 'N/A') + '</div><div><strong>Name:</strong> ' + (record[3] || '') + '</div><div><strong>Income Source:</strong> ' + (record[5] || '') + '</div><div><strong>L/F:</strong> ' + (record[6] || 'N/A') + '</div></div></div><div style="margin-bottom:12px;"><div style="font-size:12px;"><strong>Particulars:</strong> ' + (record[4] || 'N/A') + '</div></div><div style="text-align:center;padding:12px;background:#f8f9fa;border-radius:6px;margin:10px 0;"><div style="font-size:12px;color:#6c757d;">AMOUNT RECEIVED</div><div style="font-size:28px;font-weight:700;color:#28a745;">Rs. ' + parseFloat(record[7] || 0).toFixed(2) + '</div></div>' + footer;
+    } else if (type === 'expenses') {
+        return '<div class="invoice-container">' + companyHeader + '<div class="invoice-title" style="font-size:18px;">EXPENSES VOUCHER</div></div><div style="margin-bottom:12px;"><div style="display:grid;grid-template-columns:1fr 1fr;gap:2px 15px;font-size:12px;"><div><strong>S.N.:</strong> ' + (record[0] || '') + '</div><div><strong>Date:</strong> ' + formatDate(record[1]) + '</div><div><strong>Customer ID:</strong> ' + (record[2] || 'N/A') + '</div><div><strong>Name:</strong> ' + (record[3] || '') + '</div><div><strong>Expenses Head:</strong> ' + (record[5] || '') + '</div><div><strong>L/F:</strong> ' + (record[6] || 'N/A') + '</div></div></div><div style="margin-bottom:12px;"><div style="font-size:12px;"><strong>Particulars:</strong> ' + (record[4] || 'N/A') + '</div></div><div style="text-align:center;padding:12px;background:#f8f9fa;border-radius:6px;margin:10px 0;"><div style="font-size:12px;color:#6c757d;">AMOUNT PAID</div><div style="font-size:28px;font-weight:700;color:#dc3545;">Rs. ' + parseFloat(record[7] || 0).toFixed(2) + '</div></div>' + footer;
     } else {
-        return '<div class="invoice-container"><div class="invoice-header"><div class="company-info"><img src="'+logo+'" alt="Logo" width="40"><div><h5 style="font-size:1rem;">'+cn+'</h5><p style="margin:0;font-size:10px;color:#6c757d;">'+ca+'<br>Phone: '+cp+(cpan?' | Pan: '+cpan:'')+(creg?' | Reg: '+creg:'')+(cemail?' | Email: '+cemail:'')+'</p></div></div><div class="invoice-title" style="font-size:18px;">PAYMENT RECEIPT</div></div><div style="margin-bottom:12px;"><div style="display:grid;grid-template-columns:1fr 1fr;gap:2px 15px;font-size:12px;"><div><strong>Receipt:</strong> '+(record[2]||'')+'</div><div><strong>Customer ID:</strong> '+(record[1]||'')+'</div><div><strong>Bill ID:</strong> '+(record[9]||'')+'</div><div><strong>Customer:</strong> '+(record[3]||'')+'</div><div><strong>Receiver:</strong> '+(record[4]||'N/A')+'</div><div><strong>Method:</strong> '+(record[5]||'')+'</div><div><strong>Date:</strong> '+formatDate(record[7])+'</div><div><strong>Month:</strong> '+(monthNames[record[8]]||'')+'</div></div></div><div style="text-align:center;padding:12px;background:#f8f9fa;border-radius:6px;margin:10px 0;"><div style="font-size:12px;color:#6c757d;">AMOUNT PAID</div><div style="font-size:28px;font-weight:700;color:#28a745;">Rs. '+parseFloat(record[6]||0).toFixed(2)+'</div></div><div class="invoice-footer">Generated by '+cn+' | '+new Date().toLocaleString()+'</div></div>';
+        return '';
     }
 }
 
@@ -3842,8 +3863,7 @@ function getPaymentReceiptContent(bill, paymentData){
     var cpan = companyDetails['Pan No:'] || '';
     var creg = companyDetails['Registration No:'] || '';
     var cemail = companyDetails['Email'] || '';
-    var logo = companyDetails['Logo'] || 'https://drive.google.com/thumbnail?id=1LV7MlBAQgOvdZcAvcftHoEy7gMpvm5BE&sz=w800';
-    
+    var logo = companyDetails['Logo'] || 'https://drive.google.com/thumbnail?id=1LV7MlBAQgOvdZcAvcftHoEy7gMpvm5BE&sz=w800';    
     return '<div class="invoice-container"><div class="invoice-header"><div class="company-info"><img src="'+logo+'" alt="Logo" width="40"><div><h5 style="font-size:1rem;">'+cn+'</h5><p style="margin:0;font-size:10px;color:#6c757d;">'+ca+'<br>Phone: '+cp+(cpan?' | Pan: '+cpan:'')+(creg?' | Reg: '+creg:'')+(cemail?' | Email: '+cemail:'')+'</p></div></div><div class="invoice-title" style="font-size:18px;">PAYMENT RECEIPT</div></div><div style="margin-bottom:12px;"><div style="display:grid;grid-template-columns:1fr 1fr;gap:2px 15px;font-size:12px;"><div><strong>Receipt:</strong> '+(paymentData.receiptNo||'')+'</div><div><strong>Bill ID:</strong> '+(bill[0]||'')+'</div><div><strong>Customer ID:</strong> '+(bill[40]||bill[1]||'')+'</div><div><strong>Customer:</strong> '+(paymentData.customerName||'')+'</div><div><strong>Receiver:</strong> '+(paymentData.receiverName||'N/A')+'</div><div><strong>Method:</strong> '+(paymentData.paymentMethod||'')+'</div><div><strong>Date:</strong> '+formatDate(paymentData.paymentDate)+'</div><div><strong>Month:</strong> '+(monthNames[paymentData.paymentMonth]||'')+'</div></div></div><div style="text-align:center;padding:12px;background:#f8f9fa;border-radius:6px;margin:10px 0;"><div style="font-size:12px;color:#6c757d;">AMOUNT PAID</div><div style="font-size:28px;font-weight:700;color:#28a745;">Rs. '+parseFloat(paymentData.amount||0).toFixed(2)+'</div></div><div class="invoice-footer">Generated by '+cn+' | '+new Date().toLocaleString()+'</div></div>';
 }
 
