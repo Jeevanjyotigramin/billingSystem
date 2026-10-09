@@ -1151,7 +1151,7 @@
             2099: [31, 31, 32, 31, 31, 31, 30, 29, 29, 30, 30, 30],
             2100: [31, 32, 31, 32, 30, 31, 30, 29, 30, 29, 30, 30]
         };
-        const REFERENCE_AD_DATE = new Date(2000, 3, 13);
+        const REFERENCE_AD_DATE = new Date(Date.UTC(2000, 3, 13, 12, 0, 0));;
         const REFERENCE_BS_DATE = { year: 2057, month: 1, day: 1 };
         const NEPALI_MONTHS = ['BAISHAKH', 'JESTHA', 'ASHADH', 'SHRAWAN', 'BHADRA', 'ASHWIN', 'KARTIK', 'MANGSIR', 'POUSH', 'MAGH', 'FALGUN', 'CHAITRA'];
         function getDaysInBSMonth(year, month) {
@@ -1164,60 +1164,79 @@
             if (!yearData) return 365;
             return yearData.reduce((a, b) => a + b, 0);
         }
+
         function bsToAd(bsYear, bsMonth, bsDay) {
-            let totalDays = 0;
-            let y = REFERENCE_BS_DATE.year;
-            let m = REFERENCE_BS_DATE.month;
-            let d = REFERENCE_BS_DATE.day;
-            if (bsYear === y) {
-                if (bsMonth === m) { totalDays = bsDay - d; }
-                else {
-                    totalDays += getDaysInBSMonth(y, m) - d;
-                    for (let mo = m + 1; mo < bsMonth; mo++) totalDays += getDaysInBSMonth(y, mo);
-                    totalDays += bsDay;
-                }
+          let totalDays = 0;
+          const y = REFERENCE_BS_DATE.year;
+          const m = REFERENCE_BS_DATE.month;
+          const d = REFERENCE_BS_DATE.day;        
+          if (bsYear === y) {
+            if (bsMonth === m) {
+              totalDays = bsDay - d;
             } else {
-                totalDays += getDaysInBSMonth(y, m) - d;
-                for (let mo = m + 1; mo <= 12; mo++) totalDays += getDaysInBSMonth(y, mo);
-                for (let yr = y + 1; yr < bsYear; yr++) totalDays += getTotalDaysInBSYear(yr);
-                for (let mo = 1; mo < bsMonth; mo++) totalDays += getDaysInBSMonth(bsYear, mo);
-                totalDays += bsDay;
+              totalDays += getDaysInBSMonth(y, m) - d;
+              for (let mo = m + 1; mo < bsMonth; mo++) totalDays += getDaysInBSMonth(y, mo);
+              totalDays += bsDay;
             }
-            const adDate = new Date(REFERENCE_AD_DATE);
-            adDate.setDate(adDate.getDate() + totalDays);
-            return adDate;
+          } else {
+            totalDays += getDaysInBSMonth(y, m) - d;
+            for (let mo = m + 1; mo <= 12; mo++) totalDays += getDaysInBSMonth(y, mo);
+            for (let yr = y + 1; yr < bsYear; yr++) totalDays += getTotalDaysInBSYear(yr);
+            for (let mo = 1; mo < bsMonth; mo++) totalDays += getDaysInBSMonth(bsYear, mo);
+            totalDays += bsDay;
+          }
+          const adDate = new Date(REFERENCE_AD_DATE);
+          adDate.setUTCDate(adDate.getUTCDate() + totalDays);
+          return new Date(Date.UTC(
+            adDate.getUTCFullYear(),
+            adDate.getUTCMonth(),
+            adDate.getUTCDate(),
+            12, 0, 0
+          ));
         }
+        
         function adToBs(adDate) {
-            const refAd = new Date(REFERENCE_AD_DATE);
-            const diffDays = Math.round((adDate - refAd) / (24 * 60 * 60 * 1000));
-            let bsYear = REFERENCE_BS_DATE.year;
-            let bsMonth = REFERENCE_BS_DATE.month;
-            let bsDay = REFERENCE_BS_DATE.day;
-            if (diffDays >= 0) {
-                let remaining = diffDays;
-                while (remaining > 0) {
-                    const daysInMonth = getDaysInBSMonth(bsYear, bsMonth);
-                    const daysLeftInMonth = daysInMonth - bsDay;
-                    if (remaining <= daysLeftInMonth) { bsDay += remaining; remaining = 0; }
-                    else {
-                        remaining -= (daysLeftInMonth + 1);
-                        bsDay = 1; bsMonth++;
-                        if (bsMonth > 12) { bsMonth = 1; bsYear++; }
-                    }
-                }
-            } else {
-                let remaining = -diffDays;
-                while (remaining > 0) {
-                    if (bsDay > remaining) { bsDay -= remaining; remaining = 0; }
-                    else {
-                        remaining -= bsDay; bsMonth--;
-                        if (bsMonth < 1) { bsMonth = 12; bsYear--; }
-                        bsDay = getDaysInBSMonth(bsYear, bsMonth);
-                    }
-                }
+          const utcYear  = adDate.getUTCFullYear();
+          const utcMonth = adDate.getUTCMonth();
+          const utcDay   = adDate.getUTCDate();
+          const normalizedAd = new Date(Date.UTC(utcYear, utcMonth, utcDay, 12, 0, 0));        
+          const refAd = new Date(REFERENCE_AD_DATE);
+          const diffDays = Math.round((normalizedAd - refAd) / (24 * 60 * 60 * 1000));        
+          let bsYear  = REFERENCE_BS_DATE.year;
+          let bsMonth = REFERENCE_BS_DATE.month;
+          let bsDay   = REFERENCE_BS_DATE.day;        
+          if (diffDays >= 0) {
+            let remaining = diffDays;
+            while (remaining > 0) {
+              const daysInMonth    = getDaysInBSMonth(bsYear, bsMonth);
+              const daysLeftInMonth = daysInMonth - bsDay;
+              if (remaining <= daysLeftInMonth) {
+                bsDay += remaining;
+                remaining = 0;
+              } else {
+                remaining -= (daysLeftInMonth + 1);
+                bsDay = 1;
+                bsMonth++;
+                if (bsMonth > 12) { bsMonth = 1; bsYear++; }
+              }
             }
-            return { year: bsYear, month: bsMonth, day: bsDay };
+          } else {
+            let remaining = -diffDays;
+            while (remaining > 0) {
+              if (bsDay > remaining) {
+                bsDay -= remaining;
+                remaining = 0;
+              } else {
+                remaining -= bsDay;
+                bsMonth--;
+                if (bsMonth < 1) { bsMonth = 12; bsYear--; }
+                bsDay = getDaysInBSMonth(bsYear, bsMonth);
+              }
+            }
+          }
+          return { year: bsYear, month: bsMonth, day: bsDay };
         }
+        
         function calculateNepaliDate(gd) {
             const result = adToBs(gd);
             return {
@@ -1241,7 +1260,13 @@
         NepaliDatePicker.prototype._init = function() {
             var self = this;
             var todayAd = new Date();
-            var todayBs = adToBs(todayAd);
+            var todayAdUTC = new Date(Date.UTC(
+              todayAd.getFullYear(),
+              todayAd.getMonth(),
+              todayAd.getDate(),
+              12, 0, 0
+            ));
+            var todayBs = adToBs(todayAdUTC);
             this.selectedYear = todayBs.year;
             this.selectedMonth = todayBs.month;
             this.selectedDay = todayBs.day;
@@ -1336,7 +1361,13 @@
             });
             this.dropdown.querySelector('[data-action="today"]').addEventListener('click', function() {
                 var todayAd = new Date();
-                var todayBs = adToBs(todayAd);
+                var todayAdUTC = new Date(Date.UTC(
+                  todayAd.getFullYear(),
+                  todayAd.getMonth(),
+                  todayAd.getDate(),
+                  12, 0, 0
+                ));
+                var todayBs = adToBs(todayAdUTC);
                 self.selectedYear = todayBs.year;
                 self.selectedMonth = todayBs.month;
                 self.selectedDay = todayBs.day;
@@ -1397,7 +1428,7 @@
             var daysGrid = this.dropdown.querySelector('.nepali-days-grid');
             var daysInMonth = getDaysInBSMonth(this.currentYear, this.currentMonth);
             var firstDayOfMonth = bsToAd(this.currentYear, this.currentMonth, 1);
-            var startWeekday = firstDayOfMonth.getDay();
+            var startWeekday = firstDayOfMonth.getUTCDay();
             daysGrid.innerHTML = '';
             for (var i = 0; i < startWeekday; i++) {
                 var empty = document.createElement('div');
@@ -1405,7 +1436,13 @@
                 daysGrid.appendChild(empty);
             }
             var todayAd = new Date();
-            var todayBs = adToBs(todayAd);
+            var todayAdUTC = new Date(Date.UTC(
+              todayAd.getFullYear(),
+              todayAd.getMonth(),
+              todayAd.getDate(),
+              12, 0, 0
+            ));
+            var todayBs = adToBs(todayAdUTC);
             for (var d = 1; d <= daysInMonth; d++) {
                 var cell = document.createElement('div');
                 cell.className = 'nepali-day-cell';
