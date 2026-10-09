@@ -622,6 +622,8 @@
                 </div>
                 <div class="action-buttons mb-2">
                     <button class="btn btn-primary btn-sm" id="toggleConsumerFormBtn"><i class="fas fa-plus-circle me-1"></i> <span id="formToggleText">Add Customer</span></button>
+                    <button class="btn btn-success btn-sm" onclick="printAll('personal')"><i class="fas fa-print me-1"></i> Print</button>
+                    <button class="btn btn-info btn-sm" onclick="downloadAll('personal')"><i class="fas fa-download me-1"></i> Download</button>
                 </div>
                 <div id="consumerFormContainer" class="form-container">
                     <h5 id="consumerFormTitle">Add New Customer</h5>
@@ -744,6 +746,8 @@
               </div>
               <div class="action-buttons mb-2">
                     <button class="btn btn-primary btn-sm" id="toggleIncomeFormBtn"><i class="fas fa-plus-circle me-1"></i> <span id="incomeFormToggleText">Add Income</span></button>
+                    <button class="btn btn-success btn-sm" onclick="printAll('income')"><i class="fas fa-print me-1"></i> Print</button>
+                    <button class="btn btn-info btn-sm" onclick="downloadAll('income')"><i class="fas fa-download me-1"></i> Download</button>
                 </div>
                 <div id="incomeFormContainer" class="form-container">
                     <h5 id="incomeFormTitle">Add Income</h5>
@@ -788,6 +792,8 @@
               </div>
               <div class="action-buttons mb-2">
                     <button class="btn btn-primary btn-sm" id="toggleExpensesFormBtn"><i class="fas fa-plus-circle me-1"></i> <span id="expensesFormToggleText">Add Expenses</span></button>
+                    <button class="btn btn-success btn-sm" onclick="printAll('expenses')"><i class="fas fa-print me-1"></i> Print</button>
+                    <button class="btn btn-info btn-sm" onclick="downloadAll('expenses')"><i class="fas fa-download me-1"></i> Download</button>
                 </div>
                 <div id="expensesFormContainer" class="form-container">
                     <h5 id="expensesFormTitle">Add Expenses</h5>
@@ -3851,39 +3857,87 @@ function printInvoice(record, type){
 }
 
 function printAll(type) {
-    var data = type === 'billing' ? allSheetsData.billing : type === 'payment' ? allSheetsData.payment : type === 'meterreading' ? allSheetsData.meterReadingData : [];
-    if (!data || data.length === 0) { Swal.fire('Error', 'No records', 'error'); return; }
-    
-    var activeMonth = type === 'billing' ? $('#billingMonthSelect').val() : type === 'payment' ? $('#paymentMonthSelect').val() : type === 'meterreading' ? $('#readingMonth').val() : null;
-    
+    var data;
+    var activeMonth = null;    
+    if (type === 'billing') {
+        data = allSheetsData.billing;
+        activeMonth = $('#billingMonthSelect').val();
+    } else if (type === 'payment') {
+        data = allSheetsData.payment;
+        activeMonth = $('#paymentMonthSelect').val();
+    } else if (type === 'meterreading') {
+        data = allSheetsData.meterReadingData;
+        activeMonth = $('#readingMonth').val();
+    } else if (type === 'personal') {
+        data = allSheetsData.personalData;
+        activeMonth = null; // No month filter for personal data
+    } else if (type === 'income') {
+        data = allSheetsData.income;
+        activeMonth = $('#incomeMonthSelect').val();
+    } else if (type === 'expenses') {
+        data = allSheetsData.expenses;
+        activeMonth = $('#expensesMonthSelect').val();
+    } else {
+        return;
+    }    
+    if (!data || data.length === 0) { 
+        Swal.fire('Error', 'No records', 'error'); 
+        return; 
+    }
     var filteredData = data.filter(function(r) {
-        if (type === 'meterreading') {
+        if (type === 'personal') {
+            return true;
+        } else if (type === 'meterreading') {
             return activeMonth ? r.month == activeMonth : true;
         } else {
             return activeMonth ? r[r.length - 1] == activeMonth : true;
         }
-    });
-    
-    if (filteredData.length === 0) { Swal.fire('Info', 'No records for the selected month', 'info'); return; }
-    
-    var headers, rows;
+    });    
+    if (filteredData.length === 0) { 
+        Swal.fire('Info', 'No records for the selected month', 'info'); 
+        return; 
+    }   
+    var headers, rows, moduleTitle;    
     if (type === 'billing') {
-        headers = ['ID','Meter','Customer','PreReading','PreTotal','ReadingDate','CurrentReading','consuption Unit','CurrentTotal','GrossReadingNo','GrossTotal','LateFine','NetTotal','PaymentDate','PaidAmount','Status'];
+        headers = ['ID','Meter','Customer','PreReading','PreTotal','ReadingDate','CurrentReading','Consumption Unit','CurrentTotal','GrossReadingNo','GrossTotal','LateFine','NetTotal','PaymentDate','PaidAmount','Status'];
         rows = filteredData.map(function(r) {
             return [r[0]||'', r[1]||'', r[2]||'', r[41]||'', r[9]||'', formatDate(r[10]), r[12]||'', r[13]||'', r[19]||'', r[20]||'', r[26]||'', r[27]||'', r[28]||'', formatDate(r[29]), r[30]||'', r[32]||''];
         });
+        moduleTitle = 'Billing Records';
     } else if (type === 'payment') {
         headers = ['S.N.','Customer ID','Receipt','Customer','Receiver','Method','Amount','Date','Month','Bill ID'];
         rows = filteredData.map(function(r) {
             return [r[0]||'', r[1]||'', r[2]||'', r[3]||'', r[4]||'', r[5]||'', r[6]||'', formatDate(r[7]), monthNames[r[8]]||'', r[9]||''];
         });
+        moduleTitle = 'Payment Records';
     } else if (type === 'meterreading') {
         headers = ['ID','Customer ID','Customer Name','Stability','Month','Previous','Current','Consumption'];
         rows = filteredData.map(function(r) {
             return [r.id||'', r.customerId||'', r.customerName||'', r.stability||'', monthNames[r.month]||'', r.previousReading||0, r.currentReading||0, r.consumption||0];
         });
-    } else { return; }
-    
+        moduleTitle = 'Meter Reading Records';
+    } else if (type === 'personal') {
+        headers = ['ID','Meter No','Full Name (Nepali)','English Name','Gender','Mobile No','Phone No','Email','Citizenship No','NID No','PAN No','Father Name','Mother Name','Caste','Religion','Education','Profession','Stability','Propose','Permanent Address','Temporary Address','Status'];
+        rows = filteredData.map(function(r) {
+            return [ r.recordId||'',  r.meterNo||'',r.fullNameNepali||'', r.englishName||'', r.gender||'',  r.mobileNo||'', r.phoneNo||'', r.email||'', r.citizenshipNo||'',  r.nidNo||'', r.panNo||'',  r.fatherName||'', r.motherName||'', r.caste||'',  r.religion||'', r.education||'',  r.profession||'', r.stability||'', r.propose||'', r.permanentAddress||'', r.temporaryAddress||'', r.status||'Active'
+            ];
+        });
+        moduleTitle = 'Customer Records';
+    } else if (type === 'income') {
+        headers = ['S.N.','Date','Customer ID','Name','Particulars','Overhead','L/F','Amount'];
+        rows = filteredData.map(function(r) {
+            return [r[0]||'', formatDate(r[1]), r[2]||'', r[3]||'', r[4]||'', r[5]||'', r[6]||'', r[7]||''];
+        });
+        moduleTitle = 'Income Records';
+    } else if (type === 'expenses') {
+        headers = ['S.N.','Date','Customer ID','Name','Particulars','Overhead','L/F','Amount'];
+        rows = filteredData.map(function(r) {
+            return [r[0]||'', formatDate(r[1]), r[2]||'', r[3]||'', r[4]||'', r[5]||'', r[6]||'', r[7]||''];
+        });
+        moduleTitle = 'Expenses Records';
+    } else {
+        return;
+    }    
     var cn = companyDetails['Office Name'] || 'Billing Management System';
     var ca = companyDetails['Address'] || '';
     var cp = companyDetails['Phone no:'] || '';
@@ -3891,9 +3945,7 @@ function printAll(type) {
     var creg = companyDetails['Registration No:'] || '';
     var cemail = companyDetails['Email'] || '';
     var logo = companyDetails['Logo'] || 'https://drive.google.com/thumbnail?id=1LV7MlBAQgOvdZcAvcftHoEy7gMpvm5BE&sz=w800';
-    var moduleTitle = type === 'billing' ? 'Billing Records' : type === 'payment' ? 'Payment Records' : 'Meter Reading Records';
-    var monthLabel = activeMonth ? (monthNames[activeMonth] || activeMonth) : 'All Months';
-    
+    var monthLabel = activeMonth ? (monthNames[activeMonth] || activeMonth) : 'All Records';    
     var html = '<div class="invoice-container">';
     html += '<div class="invoice-header">';
     html += '<div class="company-info">';
@@ -3908,8 +3960,11 @@ function printAll(type) {
     html += '<div class="invoice-title" style="font-size:18px;">' + moduleTitle + '</div>';
     html += '</div>';
     html += '<div style="margin-bottom:12px;font-size:12px;">';
-    html += '<strong>Month:</strong> ' + monthLabel;
-    html += ' &nbsp;|&nbsp; <strong>Total Records:</strong> ' + rows.length;
+    if (activeMonth) {
+        html += '<strong>Month:</strong> ' + monthLabel;
+        html += ' &nbsp;|&nbsp; ';
+    }
+    html += '<strong>Total Records:</strong> ' + rows.length;
     html += '</div>';
     html += '<div class="table-responsive">';
     html += '<table class="invoice-table" style="width:100%;border-collapse:collapse;font-size:9px;">';
@@ -3935,30 +3990,84 @@ function printAll(type) {
     pa.innerHTML = '';
 }
 
-function downloadAll(type){
-    var data = type === 'billing' ? allSheetsData.billing : type === 'payment' ? allSheetsData.payment : type === 'meterreading' ? allSheetsData.meterReadingData : [];
-    if(!data || data.length === 0){ Swal.fire('Error', 'No records', 'error'); return; }
-    
-    var csv = 'data:text/csv;charset=utf-8,';
-    var headers, rows;
-    
-    if(type === 'billing'){
-        headers = ['ID','Meter','Customer','Stability','Propose','PreReadingTimes','PreReading','PreConsFee','PreDemand','PreActivity','PreTotal','ReadingDate','CurrentReadingNo','CurrentReading','CurrentCons','CurrentConsFee','CurrentDemand','CurrentActivity','CurrentCard','CurrentOther','CurrentTotal','GrossReadingNo','GrossConsFee','GrossDemand','GrossActivity','GrossCard','GrossOther','GrossTotal','LateFine','NetTotal','PaymentDate','PaidAmount','Method','Status'];
-        rows = data.map(function(r){ return [r[0]||'',r[1]||'',r[2]||'',r[3]||'',r[4]||'',r[5]||'',r[6]||'',r[7]||'',r[8]||'',r[9]||'',formatDate(r[10]),r[11]||'',r[12]||'',r[13]||'',r[14]||'',r[15]||'',r[16]||'',r[17]||'',r[18]||'',r[19]||'',r[20]||'',r[21]||'',r[22]||'',r[23]||'',r[24]||'',r[25]||'',r[26]||'',r[27]||'',r[28]||'',formatDate(r[29]),r[30]||'',r[31]||'',r[32]||'']; });
-    } else if(type === 'payment'){
-        headers = ['S.N.','Customer ID','Receipt','Customer','Receiver','Method','Amount','Date','Month','Bill ID'];
-        rows = data.map(function(r){ return [r[0]||'',r[1]||'',r[2]||'',r[3]||'',r[4]||'',r[5]||'',r[6]||'',formatDate(r[7]),monthNames[r[8]]||'',r[9]||'']; });
-    } else {
-        headers = ['ID','Customer ID','Customer Name','Stability','Month','Previous','Current','Consumption'];
-        rows = data.map(function(r){ return [r.id||'',r.customerId||'',r.customerName||'',r.stability||'',monthNames[r.month]||'',r.previousReading||0,r.currentReading||0,r.consumption||0]; });
+function downloadAll(type) {
+    var data;
+    var activeMonth = null;
+    if (type === 'billing') {
+        data = allSheetsData.billing;
+        activeMonth = $('#billingMonthSelect').val();
+    } else if (type === 'payment') {
+        data = allSheetsData.payment;
+        activeMonth = $('#paymentMonthSelect').val();
+    } else if (type === 'meterreading') {
+        data = allSheetsData.meterReadingData;
+        activeMonth = $('#readingMonth').val();
+    } else if (type === 'personal') {
+        data = allSheetsData.personalData;
+        activeMonth = null;
+    } else if (type === 'income') {
+        data = allSheetsData.income;
+        activeMonth = $('#incomeMonthSelect').val();
+    } else if (type === 'expenses') {
+        data = allSheetsData.expenses;
+        activeMonth = $('#expensesMonthSelect').val();
+    } else { return; }    
+    if (!data || data.length === 0) { 
+        Swal.fire('Error', 'No records', 'error'); 
+        return; 
     }
-    
+    var filteredData = data.filter(function(r) {
+        if (type === 'personal') {
+            return true;
+        } else if (type === 'meterreading') {
+            return activeMonth ? r.month == activeMonth : true;
+        } else {
+            return activeMonth ? r[r.length - 1] == activeMonth : true;
+        }
+    });    
+    if (filteredData.length === 0) { 
+        Swal.fire('Info', 'No records for the selected month', 'info'); 
+        return; 
+    }    
+    var csv = 'data:text/csv;charset=utf-8,';
+    var headers, rows;    
+    if (type === 'billing') {
+        headers = ['ID','Meter','Customer','Stability','Propose','PreReadingTimes','PreReading','PreConsFee','PreDemand','PreActivity','PreTotal','ReadingDate','CurrentReadingNo','CurrentReading','CurrentCons','CurrentConsFee','CurrentDemand','CurrentActivity','CurrentCard','CurrentOther','CurrentTotal','GrossReadingNo','GrossConsFee','GrossDemand','GrossActivity','GrossCard','GrossOther','GrossTotal','LateFine','NetTotal','PaymentDate','PaidAmount','Method','Status'];
+        rows = filteredData.map(function(r){ 
+            return [r[0]||'',r[1]||'',r[2]||'',r[3]||'',r[4]||'',r[5]||'',r[6]||'',r[7]||'',r[8]||'',r[9]||'',formatDate(r[10]),r[11]||'',r[12]||'',r[13]||'',r[14]||'',r[15]||'',r[16]||'',r[17]||'',r[18]||'',r[19]||'',r[20]||'',r[21]||'',r[22]||'',r[23]||'',r[24]||'',r[25]||'',r[26]||'',r[27]||'',r[28]||'',formatDate(r[29]),r[30]||'',r[31]||'',r[32]||'']; 
+        });
+    } else if (type === 'payment') {
+        headers = ['S.N.','Customer ID','Receipt','Customer','Receiver','Method','Amount','Date','Month','Bill ID'];
+        rows = filteredData.map(function(r){ 
+            return [r[0]||'',r[1]||'',r[2]||'',r[3]||'',r[4]||'',r[5]||'',r[6]||'',formatDate(r[7]),monthNames[r[8]]||'',r[9]||'']; 
+        });
+    } else if (type === 'meterreading') {
+        headers = ['ID','Customer ID','Customer Name','Stability','Month','Previous','Current','Consumption'];
+        rows = filteredData.map(function(r){ 
+            return [r.id||'',r.customerId||'',r.customerName||'',r.stability||'',monthNames[r.month]||'',r.previousReading||0,r.currentReading||0,r.consumption||0]; 
+        });
+    } else if (type === 'personal') {
+        headers = ['ID','Meter No','Full Name (Nepali)','English Name','Gender','Mobile No','Phone No','Email','Citizenship No','NID No','PAN No','Father Name','Mother Name','Caste','Religion','Education','Profession','Stability','Propose','Permanent Address','Temporary Address','Status'];
+        rows = filteredData.map(function(r) {
+            return [ r.recordId||'',  r.meterNo||'', r.fullNameNepali||'',  r.englishName||'',   r.gender||'',  r.mobileNo||'',  r.phoneNo||'', r.email||'',  r.citizenshipNo||'',  r.nidNo||'', r.panNo||'', r.fatherName||'',  r.motherName||'', r.caste||'',   r.religion||'',   r.education||'', r.profession||'', r.stability||'',  r.propose||'',  r.permanentAddress||'', r.temporaryAddress||'',  r.status||'Active'];
+        });
+    } else if (type === 'income') {
+        headers = ['S.N.','Date','Customer ID','Name','Particulars','Overhead','L/F','Amount'];
+        rows = filteredData.map(function(r){ 
+            return [r[0]||'',formatDate(r[1]),r[2]||'',r[3]||'',r[4]||'',r[5]||'',r[6]||'',r[7]||'']; 
+        });
+    } else if (type === 'expenses') {
+        headers = ['S.N.','Date','Customer ID','Name','Particulars','Overhead','L/F','Amount'];
+        rows = filteredData.map(function(r){ 
+            return [r[0]||'',formatDate(r[1]),r[2]||'',r[3]||'',r[4]||'',r[5]||'',r[6]||'',r[7]||'']; 
+        });
+    } else { return; }    
     csv += headers.map(function(h){ return '"'+h+'"'; }).join(',') + '\n';
-    rows.forEach(function(r){ csv += r.map(function(c){ return '"'+c+'"'; }).join(',') + '\n'; });
-    
+    rows.forEach(function(r){ csv += r.map(function(c){ return '"'+(c||'').toString().replace(/"/g, '""')+'"'; }).join(',') + '\n'; });    
     var link = document.createElement('a');
     link.setAttribute('href', encodeURI(csv));
-    link.setAttribute('download', type + '_records.csv');
+    var monthSuffix = activeMonth ? '_' + (monthNames[activeMonth] || activeMonth) : '';
+    link.setAttribute('download', type + monthSuffix + '_records.csv');
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
