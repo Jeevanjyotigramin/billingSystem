@@ -1596,7 +1596,7 @@ $(document).ready(function(){
         apiRequest('login', { username: u, password: p }).then(function(r){
             hideLoading();
             if(r && r.success){
-                currentUser = r.userData[2] || u;
+                currentUser = r.userData[3] || u;
                 $('.login-container').hide();
                 $('.app-container').show();
                 $('#usernames').text(currentUser);
