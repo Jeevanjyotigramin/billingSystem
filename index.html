@@ -2335,7 +2335,7 @@ function fillBillFromMeterNo(meterNo, skipPreviousFetch) {
     
     if (customer) {
         $('#billCustomerId').val(customer.recordId || '');
-        $('#billCustomerName').val(customer.englishName || customer.fullNameNepali || ''));
+        $('#billCustomerName').val(customer.englishName || customer.fullNameNepali || '');
         if (customer.stability) $('#billStability').val(customer.stability);
         if (customer.propose) $('#billPropose').val(customer.propose);
     } else {
@@ -2685,7 +2685,7 @@ function setupPaymentForm(){
         var customerId = $(this).val().trim();
         if(!customerId) return;
         var customer = allSheetsData.personalData.find(function(r){ return r.recordId && r.recordId.toString() === customerId; });
-        if(customer) $('#payCustomerName').val(customer.englishName || customer.fullNameNepali || ''));
+        if(customer) $('#payCustomerName').val(customer.englishName || customer.fullNameNepali || '');
         else {
             var bill = allSheetsData.billing.find(function(r){ return r[40] && r[40].toString() === customerId; });
             if(bill) $('#payCustomerName').val(bill[2] || '');
