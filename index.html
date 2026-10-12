@@ -1587,28 +1587,23 @@ $(document).ready(function(){
     
     apiRequest('getCompanyDetails').then(function(d){
         if(d){ companyDetails = d; updateCompanyDisplay(); }
-    });
-
+    });    
     $('#loginBtn').on('click', function(){
         var u = $('#username').val(), p = $('#password').val();
         if(!u || !p){ Swal.fire('Error','Enter username and password','error'); return; }
-        showLoading();
-        apiRequest('login', { username: u, password: p }).then(function(r){
+            showLoading();
+            apiRequest('login', { username: u, password: p }).then(function(r){
             hideLoading();
             if(r && r.success){
-                currentUser = r.userData[3] || u;
+                currentUser = (r.userData && r.userData.displayName) ? r.userData.displayName : (r.userData && r.userData.username) ? r.userData.username : u;                
                 $('.login-container').hide();
                 $('.app-container').show();
                 $('#usernames').text(currentUser);
                 loadAllData();
-            } else {
-                Swal.fire('Login Failed', r.message || 'Invalid credentials', 'error');
-            }
+            } else { Swal.fire('Login Failed', r.message || 'Invalid credentials', 'error');}
         });
     });
-
-    $('#password, #username').on('keypress', function(e){ if(e.key === 'Enter') $('#loginBtn').click(); });
-    
+    $('#password, #username').on('keypress', function(e){ if(e.key === 'Enter') $('#loginBtn').click(); });    
     setupCropper();
     setupConsumerForm();
     setupBillingForm();
