@@ -3203,7 +3203,6 @@ function refreshIncome(){
         }
     });
 }
-
 // ==================== INCOME FORM ====================
 function setupIncomeForm(){
     $('#toggleIncomeFormBtn').on('click', function(){
@@ -3222,7 +3221,7 @@ function setupIncomeForm(){
             loadIncomeHeadsForForm();
             container[0].scrollIntoView({behavior:'smooth',block:'start'});
         }
-    });
+    }); 
     
     $('#incomeForm').on('submit', function(event){ event.preventDefault(); submitIncomeForm(); });
     
@@ -3243,7 +3242,19 @@ function setupIncomeForm(){
         }
     });
 }
-
+    $('#incomeOverhead').on('change', function(){
+        var selectedHead = $(this).val();
+        if(!selectedHead){ return; }        
+        var incomeHeadData = allSheetsData.settingData.incomeHeadData || [];
+        var matchedItem = incomeHeadData.find(function(item){
+            return item.head === selectedHead;
+        });        
+        if(matchedItem && matchedItem.rate !== undefined && matchedItem.rate !== null && matchedItem.rate !== ''){
+            $('#incomeAmount').val(parseFloat(matchedItem.rate) || 0);
+        }
+    });
+}
+        
 function loadIncomeHeadsForForm(){
     var select = document.getElementById('incomeOverhead');
     if(!select) return;
