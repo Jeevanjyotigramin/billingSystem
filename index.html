@@ -1018,7 +1018,7 @@
 
     <script>
               // ==================== API CONFIGURATION ====================
-        const API_URL = 'https://script.google.com/macros/s/AKfycbyDhB870SfnXvyugeqdULjAZNaT7gWA34z6YJCQynE9zeicgIJ-M5kraSgjbUrEwIE/exec';      
+        const API_URL = 'https://script.google.com/macros/s/AKfycbxu0vp9fpfnajZxpjwQrrHaCvSG32bH2sZ-CN0q0aIRrH5wMGFQNTPdv4LnXORJZucM/exec';      
         async function apiRequest(action, data = {}) {
                 const formData = new URLSearchParams();
                 formData.append('action', action);
@@ -1037,8 +1037,28 @@
                     headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
                 });
                 const text = await response.text();
-                return JSON.parse(text);
+                const parsed = JSON.parse(text);
+                return decodeObject(parsed);
             }
+
+            function decodeText(text) {
+                if (text === null || text === undefined) return '';
+                return String(text).replace(/\+/g, ' ');
+            }
+
+            function decodeObject(obj) {
+            if (obj === null || obj === undefined) return obj;
+            if (typeof obj === 'string') return decodeText(obj);
+            if (Array.isArray(obj)) return obj.map(decodeObject);
+            if (typeof obj === 'object') {
+                var out = {};
+                Object.keys(obj).forEach(function(k) {
+                    out[k] = decodeObject(obj[k]);
+                });
+                return out;
+            }
+            return obj;
+        }
 
         function showToast(message, type = 'info') {
             if (typeof toastr !== 'undefined') {
