@@ -72,14 +72,121 @@
         .btn-group-sm .btn { padding: 0.15rem 0.35rem; font-size: 0.65rem; }
         .filter-row { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
         .filter-item { flex: 1; min-width: 120px; }
-        .invoice-container { max-width: 900px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; border: 1px solid black;}
-        .invoice-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #4361ee; padding-bottom: 10px; margin-bottom: 12px; flex-wrap: wrap; gap: 8px; }
-        .invoice-title { font-size: 20px; font-weight: 700; color: #4361ee; }
-        .invoice-table { width: 100%; border-collapse: collapse; margin: 12px 0; }
-        .invoice-table th { background: #f8f9fa; border: 1px solid #dee2e6; padding: 6px; text-align: left; font-weight: 600; font-size: 0.8rem; }
-        .invoice-table td { border: 1px solid #dee2e6; padding: 6px; font-size: 0.8rem; }
-        .invoice-footer { text-align: center; margin-top: 20px; padding-top: 10px; border-top: 1px solid #dee2e6; color: #6c757d; font-size: 10px; }
-        .company-info { display: flex; align-items: center; gap: 10px; }
+        .invoice-container { max-width: 900px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; border: 1px solid black; box-sizing: border-box; width: 100%; overflow-x: hidden;}
+        .invoice-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #4361ee;
+            padding-bottom: 10px;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .invoice-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #4361ee;
+            text-align: center;
+            width: 100%;
+            margin-top: 8px;
+        }
+
+        .invoice-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 12px 0;
+            font-size: 12px;
+            table-layout: auto;
+        }
+
+        .invoice-table th,
+        .invoice-table td {
+            border: 1px solid #dee2e6;
+            padding: 5px 6px;
+            font-size: 12px;
+            word-break: break-word;
+        }
+
+        .invoice-table th {
+            background: #f8f9fa;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        .invoice-footer {
+            text-align: center;
+            margin-top: 20px;
+            padding-top: 10px;
+            border-top: 1px solid #dee2e6;
+            color: #6c757d;
+            font-size: 10px;
+            word-break: break-word;
+        }
+
+        .invoice-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2px 15px;
+            font-size: 12px;
+        }
+
+        .invoice-grid > div {
+            word-break: break-word;
+        }
+
+        .invoice-amount {
+            text-align: center;
+            padding: 12px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            margin: 10px 0;
+        }
+
+        .invoice-amount-label {
+            font-size: 12px;
+            color: #6c757d;
+        }
+
+        .invoice-amount-value {
+            font-size: 28px;
+            font-weight: 700;
+        }
+
+        .invoice-amount-value.income {
+            color: #28a745;
+        }
+
+        .invoice-amount-value.expense {
+            color: #dc3545;
+        }
+
+        .company-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .company-info img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .company-info h5 {
+            font-size: 1rem;
+            margin: 0;
+        }
+
+        .company-info p {
+            margin: 0;
+            font-size: 10px;
+            color: #6c757d;
+            word-break: break-word;
+        }
         .settings-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 15px; }
         .swal-wide { max-width: 950px !important; }
         .propose-table-wrap { overflow-x: auto; width: 100%; }
@@ -169,7 +276,8 @@
         .nepali-btn-sm.primary { background: #4361ee; color: white; }
         .nepali-btn-sm.primary:hover { background: #3a4fd0; }
         @media (max-width: 992px) { #consumerForm .form-section-grid.cols-3 { grid-template-columns: repeat(2, 1fr); }}
-        @media (max-width: 768px) { #consumerForm .form-section-grid, #consumerForm .form-section-grid.cols-3 { grid-template-columns: 1fr; }
+        @media (max-width: 768px) { .invoice-container { padding: 10px; border-radius: 4px;} .invoice-title {font-size: 14px;} .invoice-grid {grid-template-columns: 1fr; gap: 3px; font-size: 11px;} .invoice-table { font-size: 10px;} .invoice-table th, .invoice-table td { padding: 3px 4px; font-size: 10px;} .invoice-amount-value {font-size: 20px; } .invoice-amount-label {font-size: 10px;} .company-info img {width: 30px; height: 30px; } .company-info h5 { font-size: 0.85rem; } .company-info p {font-size: 8px;} .invoice-footer {font-size: 8px;}
+            #consumerForm .form-section-grid, #consumerForm .form-section-grid.cols-3 { grid-template-columns: 1fr; }
             #consumerForm .form-section-grid .image-field-group { flex-direction: column; align-items: flex-start; }
             .navbar { width: 100%; height: auto; position: fixed; bottom: 0; top: auto; display: flex; flex-direction: row; overflow-x: auto; padding: 0; border-top: 1px solid rgba(255,255,255,0.2); background: var(--primary-color); }
             .logo-container { display: none; }
@@ -192,10 +300,10 @@
             .form-container .form-group input, .form-container .form-group select { width: 100%; }
             .meter-reading-grid { grid-template-columns: 1fr; }
         }
+        @media (min-width: 577px) and (max-width: 768px) { .invoice-grid { font-size: 11px; } .invoice-table th, .invoice-table td { font-size: 11px;  padding: 4px 5px;} .invoice-amount-value { font-size: 24px;}}
          @media print {
             body > *:not(#printArea) { display: none !important; }
             #printArea { display: block !important; margin: 0 !important; padding: 10px !important; width: 100% !important; max-width: 100% !important; }
-            .invoice-container { padding: 15px !important; margin: 0 auto !important; width: 100% !important; max-width: 100% !important; }
             .report-table-wrap { max-height: none !important; overflow: visible !important; height: auto !important; width: 100% !important; padding: 0 !important; margin: 0 !important; }
             #reportTable { width: 100% !important; max-width: 100% !important; border-collapse: collapse !important; }
             #reportTable th, #reportTable td { padding: 6px 8px !important; border: 1px solid #ddd !important; font-size: 9px !important; }
@@ -210,6 +318,11 @@
             .company-info { justify-content: center !important; }
             .customer-view-card { box-shadow: none; padding: 10px; }
             .no-print { display: none !important; }
+            .invoice-container { border: 1px solid #000 !important; padding: 10px !important; max-width: 100% !important; width: 100% !important; page-break-inside: avoid;}
+            .invoice-grid {font-size: 9px !important;}
+            .invoice-table { font-size: 8px !important; }
+            .invoice-table th, .invoice-table td { font-size: 8px !important; padding: 2px 3px !important; }
+            .invoice-amount-value {font-size: 16px !important; }
         }
     </style>
 </head>
@@ -1064,7 +1177,7 @@
             if (typeof toastr !== 'undefined') {
                 toastr[type](message);
             } else {
-                console.log(type + ': ' + message);
+                alert(type + ': ' + message);
             }
         }
         // Complete Nepali calendar data for 2000-2100
@@ -1611,18 +1724,19 @@ $(document).ready(function(){
 
     $('#loginBtn').on('click', function(){
         var u = $('#username').val(), p = $('#password').val();
-        if(!u || !p){ Swal.fire('Error','Enter username and password','error'); return; }
+        if(!u){ Swal.fire('Error','Enter username','error'); return; }
+        if(!p){ Swal.fire('Error','Enter password','error'); return; }
         showLoading();
         apiRequest('login', { username: u, password: p }).then(function(r){
             hideLoading();
             if(r && r.success){
-                currentUser = r.userData[2] || u;
+                currentUser = (r.userData && r.userData.displayName)? r.userData.displayName : (r.userData && r.userData.username) ? r.userData.username : u;                
                 $('.login-container').hide();
                 $('.app-container').show();
                 $('#usernames').text(currentUser);
                 loadAllData();
             } else {
-                Swal.fire('Login Failed', r.message || 'Invalid credentials', 'error');
+                Swal.fire('Login Failed', r.message || 'Invalid Username and Password', 'error');
             }
         });
     });
@@ -1673,7 +1787,7 @@ $(document).ready(function(){
         tbody.html(html || '<tr><td colspan="6" class="text-center">No matching records</td></tr>');
     });
     
-    toastr.options = { closeButton: true, progressBar: true, positionClass: 'toast-top-right', timeOut: '2000' };
+    toastr.options = { closeButton: true, progressBar: true, positionClass: 'toast-top-right', timeOut: '3000' };
 });
 
 // ==================== LOGOUT ====================
@@ -3893,21 +4007,104 @@ function getInvoiceContent(record, type) {
     var creg = companyDetails['Registration No:'] || '';
     var cemail = companyDetails['Email'] || '';
     var logo = companyDetails['Logo'] || 'https://drive.google.com/thumbnail?id=1LV7MlBAQgOvdZcAvcftHoEy7gMpvm5BE&sz=w800';
-    var companyHeader = '<div class="invoice-header"><div class="company-info"><img src="' + logo + '" alt="Logo" width="40"><div><h5 style="font-size:1rem;">' + cn + '</h5><p style="margin:0;font-size:10px;color:#6c757d;">' + ca +
+    var companyHeader = '<div class="invoice-header"><div class="company-info">' +
+        '<img src="' + logo + '" alt="Logo">' +
+        '<div><h5>' + cn + '</h5><p>' + ca +
         (cp ? '<br>Phone: ' + cp : '') +
         (cpan ? ' | Pan: ' + cpan : '') +
         (creg ? ' | Reg: ' + creg : '') +
         (cemail ? ' | Email: ' + cemail : '') +
         '</p></div></div>';
+
     var footer = '<div class="invoice-footer">Generated by ' + cn + ' | ' + new Date().toLocaleString() + '</div></div>';
     if (type === 'billing') {
-        return '<div class="invoice-container">' + companyHeader + '<div class="invoice-title" style="font-size:18px;">BILL INVOICE</div></div><div style="margin-bottom:12px;"><div style="display:grid;grid-template-columns:1fr 1fr;gap:2px 15px;font-size:12px;"><div><strong>Bill ID:</strong> ' + (record[0] || '') + '</div><div><strong>Meter:</strong> ' + (record[1] || '') + '</div><div><strong>Customer:</strong> ' + (record[2] || '') + '</div><div><strong>Stability:</strong> ' + (record[3] || '') + '</div><div><strong>Propose:</strong> ' + (record[4] || '') + '</div><div><strong>Date:</strong> ' + formatDate(record[10]) + '</div><div><strong>Status:</strong> <span class="badge ' + (record[32] && record[32].toLowerCase() === 'complete' ? 'bg-success' : 'bg-warning') + '" style="font-size:10px;">' + (record[32] || 'Pending') + '</span></div></div></div><table class="invoice-table"><thead><tr><th style="font-size:11px;">Description</th><th style="font-size:11px;">Current</th><th style="font-size:11px;">Gross</th></tr></thead><tbody><tr><td style="font-size:11px;">Reading No</td><td style="font-size:11px;">' + (record[12] || '0') + '</td><td style="font-size:11px;">' + (record[20] || '0') + '</td></tr><tr><td style="font-size:11px;">Consumption Fee</td><td style="font-size:11px;">Rs. ' + parseFloat(record[14] || 0).toFixed(2) + '</td><td style="font-size:11px;">Rs. ' + parseFloat(record[21] || 0).toFixed(2) + '</td></tr><tr><td style="font-size:11px;">Demand Fee</td><td style="font-size:11px;">Rs. ' + parseFloat(record[15] || 0).toFixed(2) + '</td><td style="font-size:11px;">Rs. ' + parseFloat(record[22] || 0).toFixed(2) + '</td></tr><tr><td style="font-size:11px;">Activity Fee</td><td style="font-size:11px;">Rs. ' + parseFloat(record[16] || 0).toFixed(2) + '</td><td style="font-size:11px;">Rs. ' + parseFloat(record[23] || 0).toFixed(2) + '</td></tr><tr><td style="font-size:11px;">Card Fee</td><td style="font-size:11px;">Rs. ' + parseFloat(record[17] || 0).toFixed(2) + '</td><td style="font-size:11px;">Rs. ' + parseFloat(record[24] || 0).toFixed(2) + '</td></tr><tr><td style="font-size:11px;">Other Fee</td><td style="font-size:11px;">Rs. ' + parseFloat(record[18] || 0).toFixed(2) + '</td><td style="font-size:11px;">Rs. ' + parseFloat(record[25] || 0).toFixed(2) + '</td></tr></tbody></table><div style="margin-top:6px;"><div style="display:grid;grid-template-columns:1fr 1fr;gap:2px 15px;font-size:12px;"><div><strong>Total Current:</strong> Rs. ' + parseFloat(record[19] || 0).toFixed(2) + '</div><div><strong>Total Gross:</strong> Rs. ' + parseFloat(record[26] || 0).toFixed(2) + '</div><div><strong>Late Fine:</strong> Rs. ' + parseFloat(record[27] || 0).toFixed(2) + '</div><div><strong>Net Total:</strong> <span style="font-size:16px;color:#4361ee;font-weight:700;">Rs. ' + parseFloat(record[28] || 0).toFixed(2) + '</span></div></div></div><div style="margin-top:10px;padding-top:10px;border-top:1px solid #dee2e6;font-size:12px;"><div style="display:grid;grid-template-columns:1fr 1fr;gap:2px 15px;"><div><strong>Balance Month:</strong> ' + (record[33] || '0') + '</div><div><strong>Balance Bill:</strong> Rs. ' + parseFloat(record[34] || 0).toFixed(2) + '</div><div><strong>Balance Demand:</strong> Rs. ' + parseFloat(record[35] || 0).toFixed(2) + '</div><div><strong>Balance Activity:</strong> Rs. ' + parseFloat(record[36] || 0).toFixed(2) + '</div><div><strong>Paid Bill No:</strong> ' + (record[37] || 'N/A') + '</div><div><strong>Receiver:</strong> ' + (record[39] || 'N/A') + '</div></div><div><strong>Remarks:</strong> ' + (record[38] || 'N/A') + '</div></div>' + footer;
+        return '<div class="invoice-container">' + companyHeader +
+            '<div class="invoice-title">BILL INVOICE</div></div>' +
+            '<div class="invoice-grid">' +
+                '<div><strong>Bill ID:</strong> ' + (record[0] || '') + '</div>' +
+                '<div><strong>Meter:</strong> ' + (record[1] || '') + '</div>' +
+                '<div><strong>Customer:</strong> ' + (record[2] || '') + '</div>' +
+                '<div><strong>Stability:</strong> ' + (record[3] || '') + '</div>' +
+                '<div><strong>Propose:</strong> ' + (record[4] || '') + '</div>' +
+                '<div><strong>Date:</strong> ' + formatDate(record[10]) + '</div>' +
+                '<div><strong>Status:</strong> <span class="badge ' +
+                    (record[32] && record[32].toLowerCase() === 'complete' ? 'bg-success' : 'bg-warning') +
+                    '">' + (record[32] || 'Pending') + '</span></div>' +
+            '</div>' +
+            '<table class="invoice-table"><thead><tr>' +
+                '<th>Description</th><th>Current</th><th>Gross</th>' +
+            '</tr></thead><tbody>' +
+                '<tr><td>Reading No</td><td>' + (record[12] || '0') + '</td><td>' + (record[20] || '0') + '</td></tr>' +
+                '<tr><td>Consumption Fee</td><td>Rs. ' + parseFloat(record[14] || 0).toFixed(2) + '</td><td>Rs. ' + parseFloat(record[21] || 0).toFixed(2) + '</td></tr>' +
+                '<tr><td>Demand Fee</td><td>Rs. ' + parseFloat(record[15] || 0).toFixed(2) + '</td><td>Rs. ' + parseFloat(record[22] || 0).toFixed(2) + '</td></tr>' +
+                '<tr><td>Activity Fee</td><td>Rs. ' + parseFloat(record[16] || 0).toFixed(2) + '</td><td>Rs. ' + parseFloat(record[23] || 0).toFixed(2) + '</td></tr>' +
+                '<tr><td>Card Fee</td><td>Rs. ' + parseFloat(record[17] || 0).toFixed(2) + '</td><td>Rs. ' + parseFloat(record[24] || 0).toFixed(2) + '</td></tr>' +
+                '<tr><td>Other Fee</td><td>Rs. ' + parseFloat(record[18] || 0).toFixed(2) + '</td><td>Rs. ' + parseFloat(record[25] || 0).toFixed(2) + '</td></tr>' +
+            '</tbody></table>' +
+            '<div class="invoice-grid">' +
+                '<div><strong>Total Current:</strong> Rs. ' + parseFloat(record[19] || 0).toFixed(2) + '</div>' +
+                '<div><strong>Total Gross:</strong> Rs. ' + parseFloat(record[26] || 0).toFixed(2) + '</div>' +
+                '<div><strong>Late Fine:</strong> Rs. ' + parseFloat(record[27] || 0).toFixed(2) + '</div>' +
+                '<div><strong>Net Total:</strong> <span style="font-size:16px;color:#4361ee;font-weight:700;">Rs. ' + parseFloat(record[28] || 0).toFixed(2) + '</span></div>' +
+            '</div>' +
+            '<div class="invoice-grid" style="margin-top:10px;padding-top:10px;border-top:1px solid #dee2e6;">' +
+                '<div><strong>Balance Month:</strong> ' + (record[33] || '0') + '</div>' +
+                '<div><strong>Balance Bill:</strong> Rs. ' + parseFloat(record[34] || 0).toFixed(2) + '</div>' +
+                '<div><strong>Balance Demand:</strong> Rs. ' + parseFloat(record[35] || 0).toFixed(2) + '</div>' +
+                '<div><strong>Balance Activity:</strong> Rs. ' + parseFloat(record[36] || 0).toFixed(2) + '</div>' +
+                '<div><strong>Paid Bill No:</strong> ' + (record[37] || 'N/A') + '</div>' +
+                '<div><strong>Receiver:</strong> ' + (record[39] || 'N/A') + '</div>' +
+                '<div style="grid-column:1/-1;"><strong>Remarks:</strong> ' + (record[38] || 'N/A') + '</div>' +
+            '</div>' + footer;
     } else if (type === 'payment') {
-        return '<div class="invoice-container">' + companyHeader + '<div class="invoice-title" style="font-size:18px;">PAYMENT RECEIPT</div></div><div style="margin-bottom:12px;"><div style="display:grid;grid-template-columns:1fr 1fr;gap:2px 15px;font-size:12px;"><div><strong>Receipt:</strong> ' + (record[2] || '') + '</div><div><strong>Customer ID:</strong> ' + (record[1] || '') + '</div><div><strong>Bill ID:</strong> ' + (record[9] || '') + '</div><div><strong>Customer:</strong> ' + (record[3] || '') + '</div><div><strong>Receiver:</strong> ' + (record[4] || 'N/A') + '</div><div><strong>Method:</strong> ' + (record[5] || '') + '</div><div><strong>Date:</strong> ' + formatDate(record[7]) + '</div><div><strong>Month:</strong> ' + (monthNames[record[8]] || '') + '</div></div></div><div style="text-align:center;padding:12px;background:#f8f9fa;border-radius:6px;margin:10px 0;"><div style="font-size:12px;color:#6c757d;">AMOUNT PAID</div><div style="font-size:28px;font-weight:700;color:#28a745;">Rs. ' + parseFloat(record[6] || 0).toFixed(2) + '</div></div>' + footer;
+        return '<div class="invoice-container">' + companyHeader +
+            '<div class="invoice-title">PAYMENT RECEIPT</div></div>' +
+            '<div class="invoice-grid">' +
+                '<div><strong>Receipt:</strong> ' + (record[2] || '') + '</div>' +
+                '<div><strong>Customer ID:</strong> ' + (record[1] || '') + '</div>' +
+                '<div><strong>Bill ID:</strong> ' + (record[9] || '') + '</div>' +
+                '<div><strong>Customer:</strong> ' + (record[3] || '') + '</div>' +
+                '<div><strong>Receiver:</strong> ' + (record[4] || 'N/A') + '</div>' +
+                '<div><strong>Method:</strong> ' + (record[5] || '') + '</div>' +
+                '<div><strong>Date:</strong> ' + formatDate(record[7]) + '</div>' +
+                '<div><strong>Month:</strong> ' + (monthNames[record[8]] || '') + '</div>' +
+            '</div>' +
+            '<div class="invoice-amount">' +
+                '<div class="invoice-amount-label">AMOUNT PAID</div>' +
+                '<div class="invoice-amount-value income">Rs. ' + parseFloat(record[6] || 0).toFixed(2) + '</div>' +
+            '</div>' + footer;
     } else if (type === 'income') {
-        return '<div class="invoice-container">' + companyHeader + '<div class="invoice-title" style="font-size:18px;">INCOME RECEIPT</div></div><div style="margin-bottom:12px;"><div style="display:grid;grid-template-columns:1fr 1fr;gap:2px 15px;font-size:12px;"><div><strong>S.N.:</strong> ' + (record[0] || '') + '</div><div><strong>Date:</strong> ' + formatDate(record[1]) + '</div><div><strong>Customer ID:</strong> ' + (record[2] || 'N/A') + '</div><div><strong>Name:</strong> ' + (record[3] || '') + '</div><div><strong>Income Source:</strong> ' + (record[5] || '') + '</div><div><strong>L/F:</strong> ' + (record[6] || 'N/A') + '</div></div></div><div style="margin-bottom:12px;"><div style="font-size:12px;"><strong>Particulars:</strong> ' + (record[4] || 'N/A') + '</div></div><div style="text-align:center;padding:12px;background:#f8f9fa;border-radius:6px;margin:10px 0;"><div style="font-size:12px;color:#6c757d;">AMOUNT RECEIVED</div><div style="font-size:28px;font-weight:700;color:#28a745;">Rs. ' + parseFloat(record[7] || 0).toFixed(2) + '</div></div>' + footer;
+        return '<div class="invoice-container">' + companyHeader +
+            '<div class="invoice-title">INCOME RECEIPT</div></div>' +
+            '<div class="invoice-grid">' +
+                '<div><strong>S.N.:</strong> ' + (record[0] || '') + '</div>' +
+                '<div><strong>Date:</strong> ' + formatDate(record[1]) + '</div>' +
+                '<div><strong>Customer ID:</strong> ' + (record[2] || 'N/A') + '</div>' +
+                '<div><strong>Name:</strong> ' + (record[3] || '') + '</div>' +
+                '<div><strong>Income Source:</strong> ' + (record[5] || '') + '</div>' +
+                '<div><strong>L/F:</strong> ' + (record[6] || 'N/A') + '</div>' +
+            '</div>' +
+            '<div style="margin-bottom:12px;font-size:12px;word-break:break-word;"><strong>Particulars:</strong> ' + (record[4] || 'N/A') + '</div>' +
+            '<div class="invoice-amount">' +
+                '<div class="invoice-amount-label">AMOUNT RECEIVED</div>' +
+                '<div class="invoice-amount-value income">Rs. ' + parseFloat(record[7] || 0).toFixed(2) + '</div>' +
+            '</div>' + footer;
     } else if (type === 'expenses') {
-        return '<div class="invoice-container">' + companyHeader + '<div class="invoice-title" style="font-size:18px;">EXPENSES VOUCHER</div></div><div style="margin-bottom:12px;"><div style="display:grid;grid-template-columns:1fr 1fr;gap:2px 15px;font-size:12px;"><div><strong>S.N.:</strong> ' + (record[0] || '') + '</div><div><strong>Date:</strong> ' + formatDate(record[1]) + '</div><div><strong>Customer ID:</strong> ' + (record[2] || 'N/A') + '</div><div><strong>Name:</strong> ' + (record[3] || '') + '</div><div><strong>Expenses Head:</strong> ' + (record[5] || '') + '</div><div><strong>L/F:</strong> ' + (record[6] || 'N/A') + '</div></div></div><div style="margin-bottom:12px;"><div style="font-size:12px;"><strong>Particulars:</strong> ' + (record[4] || 'N/A') + '</div></div><div style="text-align:center;padding:12px;background:#f8f9fa;border-radius:6px;margin:10px 0;"><div style="font-size:12px;color:#6c757d;">AMOUNT PAID</div><div style="font-size:28px;font-weight:700;color:#dc3545;">Rs. ' + parseFloat(record[7] || 0).toFixed(2) + '</div></div>' + footer;
+        return '<div class="invoice-container">' + companyHeader +
+            '<div class="invoice-title">EXPENSES VOUCHER</div></div>' +
+            '<div class="invoice-grid">' +
+                '<div><strong>S.N.:</strong> ' + (record[0] || '') + '</div>' +
+                '<div><strong>Date:</strong> ' + formatDate(record[1]) + '</div>' +
+                '<div><strong>Customer ID:</strong> ' + (record[2] || 'N/A') + '</div>' +
+                '<div><strong>Name:</strong> ' + (record[3] || '') + '</div>' +
+                '<div><strong>Expenses Head:</strong> ' + (record[5] || '') + '</div>' +
+                '<div><strong>L/F:</strong> ' + (record[6] || 'N/A') + '</div>' +
+            '</div>' +
+            '<div style="margin-bottom:12px;font-size:12px;word-break:break-word;"><strong>Particulars:</strong> ' + (record[4] || 'N/A') + '</div>' +
+            '<div class="invoice-amount">' +
+                '<div class="invoice-amount-label">AMOUNT PAID</div>' +
+                '<div class="invoice-amount-value expense">Rs. ' + parseFloat(record[7] || 0).toFixed(2) + '</div>' +
+            '</div>' + footer;
     } else {
         return '';
     }
