@@ -1018,58 +1018,36 @@
 
     <script>
               // ==================== API CONFIGURATION ====================
-        const API_URL = 'https://script.google.com/macros/s/AKfycbxu0vp9fpfnajZxpjwQrrHaCvSG32bH2sZ-CN0q0aIRrH5wMGFQNTPdv4LnXORJZucM/exec';
+        const API_URL = 'https://script.google.com/macros/s/AKfycbyDhB870SfnXvyugeqdULjAZNaT7gWA34z6YJCQynE9zeicgIJ-M5kraSgjbUrEwIE/exec';      
         async function apiRequest(action, data = {}) {
-            const formData = new URLSearchParams();
-            formData.append('action', action);
-            for (const [key, value] of Object.entries(data)) {
-                if (value !== null && value !== undefined) {
-                    if (typeof value === 'object') {
-                        formData.append(key, JSON.stringify(value));
-                    } else {
-                        formData.append(key, value);
+                const formData = new URLSearchParams();
+                formData.append('action', action);
+                for (const [key, value] of Object.entries(data)) {
+                    if (value !== null && value !== undefined) {
+                        if (typeof value === 'object') {
+                            formData.append(key, JSON.stringify(value));
+                        } else {
+                            formData.append(key, value);
+                        }
                     }
                 }
-            }
-            const response = await fetch(API_URL, {
-                method: 'POST',
-                body: formData,
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
-            });
-            const text = await response.text();
-            const parsed = JSON.parse(text);
-            return decodeObject(parsed);
-        } 
-        
-        function decodeText(text) {
-            if (text === null || text === undefined) return '';
-            return String(text).replace(/\+/g, ' ');
-        }
-        
-        function decodeObject(obj) {
-            if (obj === null || obj === undefined) return obj;
-            if (typeof obj === 'string') return decodeText(obj);
-            if (Array.isArray(obj)) return obj.map(decodeObject);
-            if (typeof obj === 'object') {
-                var out = {};
-                Object.keys(obj).forEach(function(k) {
-                    out[k] = decodeObject(obj[k]);
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    body: formData,
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
                 });
-                return out;
+                const text = await response.text();
+                return JSON.parse(text);
             }
-            return obj;
-        }
 
         function showToast(message, type = 'info') {
             if (typeof toastr !== 'undefined') {
                 toastr[type](message);
             } else {
-                alert(type + ': ' + message);
+                console.log(type + ': ' + message);
             }
-        };
-        
+        }
         // Complete Nepali calendar data for 2000-2100
-        
         const BS_CALENDAR_DATA = {
             2000: [30, 32, 31, 32, 31, 30, 30, 30, 29, 30, 29, 31],
             2001: [31, 31, 32, 31, 31, 31, 30, 29, 30, 29, 30, 30],
@@ -1605,26 +1583,32 @@ function getNepaliMonthIndex(date){ return date.getMonth() + 1; }
 // ==================== INITIALIZATION ====================
 $(document).ready(function(){
     populateMonthDropdowns();
-    updatePeriodOptions();    
+    updatePeriodOptions();
+    
     apiRequest('getCompanyDetails').then(function(d){
         if(d){ companyDetails = d; updateCompanyDisplay(); }
-    });    
+    });
+
     $('#loginBtn').on('click', function(){
         var u = $('#username').val(), p = $('#password').val();
         if(!u || !p){ Swal.fire('Error','Enter username and password','error'); return; }
-            showLoading();
-            apiRequest('login', { username: u, password: p }).then(function(r){
+        showLoading();
+        apiRequest('login', { username: u, password: p }).then(function(r){
             hideLoading();
             if(r && r.success){
-                currentUser = (r.userData && r.userData.displayName) ? r.userData.displayName : (r.userData && r.userData.username) ? r.userData.username : u;                
+                currentUser = r.userData[2] || u;
                 $('.login-container').hide();
                 $('.app-container').show();
                 $('#usernames').text(currentUser);
                 loadAllData();
-            } else { Swal.fire('Login Failed', r.message || 'Invalid credentials', 'error');}
+            } else {
+                Swal.fire('Login Failed', r.message || 'Invalid credentials', 'error');
+            }
         });
     });
-    $('#password, #username').on('keypress', function(e){ if(e.key === 'Enter') $('#loginBtn').click(); });    
+
+    $('#password, #username').on('keypress', function(e){ if(e.key === 'Enter') $('#loginBtn').click(); });
+    
     setupCropper();
     setupConsumerForm();
     setupBillingForm();
@@ -2309,7 +2293,7 @@ function fillBillFromCustomerId(customerId, skipPreviousFetch) {
     
     if (customer) {
         $('#billMeterNo').val(customer.meterNo || '');
-        $('#billCustomerName').val(customer.englishName || customer.fullNameNepali || '');
+        $('#billCustomerName').val(customer.fullNameNepali || customer.englishName || '');
         if (customer.stability) $('#billStability').val(customer.stability);
         if (customer.propose) $('#billPropose').val(customer.propose);
     } else {
@@ -2356,7 +2340,7 @@ function fillBillFromMeterNo(meterNo, skipPreviousFetch) {
     
     if (customer) {
         $('#billCustomerId').val(customer.recordId || '');
-        $('#billCustomerName').val(customer.englishName || customer.fullNameNepali || '');
+        $('#billCustomerName').val(customer.fullNameNepali || customer.englishName || '');
         if (customer.stability) $('#billStability').val(customer.stability);
         if (customer.propose) $('#billPropose').val(customer.propose);
     } else {
@@ -2706,7 +2690,7 @@ function setupPaymentForm(){
         var customerId = $(this).val().trim();
         if(!customerId) return;
         var customer = allSheetsData.personalData.find(function(r){ return r.recordId && r.recordId.toString() === customerId; });
-        if(customer) $('#payCustomerName').val(customer.englishName || customer.fullNameNepali || '');
+        if(customer) $('#payCustomerName').val(customer.fullNameNepali || customer.englishName || '');
         else {
             var bill = allSheetsData.billing.find(function(r){ return r[40] && r[40].toString() === customerId; });
             if(bill) $('#payCustomerName').val(bill[2] || '');
@@ -2859,7 +2843,7 @@ function payBill(billId, month) {
         var cust = allSheetsData.personalData.find(function(r) {
             return r.recordId && r.recordId.toString() === customerId.toString();
         });
-        if (cust) customerName = customerName || cust.fullNameNepali  ;
+        if (cust) customerName = cust.fullNameNepali || customerName;
     }
     
     apiRequest('getNextReceiptNo', { month: billMonth }).then(function(rn){
@@ -2996,13 +2980,15 @@ function resetConsumerForm(){
 }
 
 function submitConsumerForm(){
-    if(!validateConsumerForm()) return;    
+    if(!validateConsumerForm()) return;
+    
     var submitBtn = $('#submitbutton');
     submitBtn.html('Please Wait..').prop('disabled', true);
     var rowIndex = $('#rowIndex').val();
     var name = $('#englishName').val().trim() || $('#fullNameNepali').val().trim() || 'consumer';
     var mobile = $('#mobileNo').val().trim() || 'unknown';
-    var fileName = name + '_' + mobile + '_' + new Date().toISOString().split('T')[0] + '.jpg';    
+    var fileName = name + '_' + mobile + '_' + new Date().toISOString().split('T')[0] + '.jpg';
+    
     var formData = {
         rowIndex: rowIndex || null,
         memberId: $('#recordId').val() || 0,
@@ -3096,13 +3082,16 @@ function validateConsumerForm(){
     var meterNo = $('#meterNo').val().trim();
     var fullNameNepali = $('#fullNameNepali').val().trim();
     var gender = $('#gender').val();
-    var mobileNo = $('#mobileNo').val().trim();    
+    var mobileNo = $('#mobileNo').val().trim();
+    
     if(!meterNo){ toastr.error('Please enter Meter No'); $('#meterNo').focus(); return false; }
     if(!fullNameNepali){ toastr.error('Please enter Full Name (Nepali)'); $('#fullNameNepali').focus(); return false; }
     if(!gender){ toastr.error('Please select Gender'); $('#gender').focus(); return false; }
-    if(!mobileNo){ toastr.error('Please enter Mobile No'); $('#mobileNo').focus(); return false; }    
+    if(!mobileNo){ toastr.error('Please enter Mobile No'); $('#mobileNo').focus(); return false; }
+    
     var email = $('#email').val().trim();
-    if(email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){ toastr.error('Please enter a valid email address'); $('#email').focus(); return false; }    
+    if(email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){ toastr.error('Please enter a valid email address'); $('#email').focus(); return false; }
+    
     return true;
 }
 
@@ -3116,7 +3105,8 @@ function editPersonal(id){
 
 function viewPersonalRecord(id){
     var record = allSheetsData.personalData.find(function(r){ return parseInt(r.recordId) === parseInt(id); });
-    if(!record){ Swal.fire('Error', 'Record not found', 'error'); return; }    
+    if(!record){ Swal.fire('Error', 'Record not found', 'error'); return; }
+    
     var picUrl = record.imageUrl || '';
     var content = '<div class="customer-view-card">';
     content += '<div class="customer-view-header">';
@@ -3126,20 +3116,25 @@ function viewPersonalRecord(id){
     content += '<p style="font-size:12px;color:#6c757d;">Member ID: '+record.recordId+' | Status: <span class="badge '+(record.status==='Active'?'bg-success':'bg-danger')+'">'+(record.status||'Active')+'</span></p>';
     content += '</div>';
     content += '<div class="customer-view-grid">';
-    content += '<div class="customer-view-section">Basic Information</div>';    
+    content += '<div class="customer-view-section">Basic Information</div>';
+    
     var basicFields = ['meterNo','fullNameNepali','englishName','dobNepali','dobEnglish','gender','citizenshipNo','citizenshipDate','citizenshipDistrict','nidNo','panNo'];
     var basicLabels = ['Meter No','Full Name (Nepali)','English Name','DOB (Nepali)','DOB (English)','Gender','Citizenship No','Citizenship Date','Citizenship District','NID No','PAN No'];
     basicFields.forEach(function(f,i){ content += '<div class="customer-view-item"><span class="label">'+basicLabels[i]+':</span><span class="value">'+(record[f]||'N/A')+'</span></div>'; });
+    
     content += '<div class="customer-view-section">Family Details</div>';
     var familyFields = ['fatherName','fatherCitizenshipNo','fatherNidNo','motherName','motherCitizenshipNo','motherNidNo','grandFatherName','grandFatherCitizenshipNo','grandFatherNidNo','grandMotherName','grandMotherCitizenshipNo','grandMotherNidNo','maritalStatus','wifeName','wifeCitizenshipNo','wifeNidNo','spouseName'];
     var familyLabels = ['Father Name','Father Citizenship','Father NID','Mother Name','Mother Citizenship','Mother NID','Grand Father Name','Grand Father Citizenship','Grand Father NID','Grand Mother Name','Grand Mother Citizenship','Grand Mother NID','Marital Status','Wife Name','Wife Citizenship','Wife NID','Spouse Name'];
     familyFields.forEach(function(f,i){ content += '<div class="customer-view-item"><span class="label">'+familyLabels[i]+':</span><span class="value">'+(record[f]||'N/A')+'</span></div>'; });
+    
     content += '<div class="customer-view-section">Additional Information</div>';
     var addFields = ['caste','stability','religion','education','profession','experienceYear','mobileNo','phoneNo','email','propose','permanentAddress','temporaryAddress','load','meterNo2','landOwnerName','land','kittaNo'];
     var addLabels = ['Caste','Stability','Religion','Education','Profession','Experience Year','Mobile No','Phone No','Email','Propose','Permanent Address','Temporary Address','Load (kb)','Meter No. 2','Land Owner Name','Land (katta)','Kitta No'];
     addFields.forEach(function(f,i){ content += '<div class="customer-view-item"><span class="label">'+addLabels[i]+':</span><span class="value">'+(record[f]||'N/A')+'</span></div>'; });
+    
     content += '</div></div>';
-    window.customerViewContent = content;    
+    window.customerViewContent = content;
+    
     Swal.fire({
         html: content,
         width: '900px',
@@ -3162,9 +3157,11 @@ function printCustomerView(){
 
 function togglePersonalStatus(id){
     var record = allSheetsData.personalData.find(function(r){ return parseInt(r.recordId) === parseInt(id); });
-    if(!record){ Swal.fire('Error', 'Record not found', 'error'); return; }    
+    if(!record){ Swal.fire('Error', 'Record not found', 'error'); return; }
+    
     var currentStatus = record.status || 'Active';
-    var msg = currentStatus === 'Active' ? 'inactivate' : 'activate';    
+    var msg = currentStatus === 'Active' ? 'inactivate' : 'activate';
+    
     Swal.fire({
         title: 'Confirm Action',
         text: 'Are you sure you want to ' + msg + ' this customer?',
@@ -3191,7 +3188,8 @@ function togglePersonalStatus(id){
 // ==================== INCOME TABLE ====================
 function renderIncomeTable(){
     var month = $('#incomeMonthSelect') ? $('#incomeMonthSelect').val() : $('#monthSelect').val();
-    var data = allSheetsData.income.filter(function(r){ return r[r.length-1] == month; });    
+    var data = allSheetsData.income.filter(function(r){ return r[r.length-1] == month; });
+    
     var columns = [
         {data: null, title: 'Actions', render: function(d,t,row){
             return '<div class="btn-group-sm">'+
@@ -3208,7 +3206,8 @@ function renderIncomeTable(){
         {data: null, title: 'Overhead', render: function(d,t,row){ return row[5]||''; }},
         {data: null, title: 'L/F', render: function(d,t,row){ return row[6]||''; }},
         {data: null, title: 'Amount', render: function(d,t,row){ return 'Rs. '+parseFloat(row[7]||0).toFixed(2); }}
-    ];    
+    ];
+    
     initDataTable('incomeTable', data, columns);
 }
 
@@ -3224,6 +3223,7 @@ function refreshIncome(){
         }
     });
 }
+
 // ==================== INCOME FORM ====================
 function setupIncomeForm(){
     $('#toggleIncomeFormBtn').on('click', function(){
@@ -3242,7 +3242,7 @@ function setupIncomeForm(){
             loadIncomeHeadsForForm();
             container[0].scrollIntoView({behavior:'smooth',block:'start'});
         }
-    }); 
+    });
     
     $('#incomeForm').on('submit', function(event){ event.preventDefault(); submitIncomeForm(); });
     
@@ -3256,31 +3256,20 @@ function setupIncomeForm(){
         var customerId = $(this).val().trim();
         if(!customerId) return;
         var customer = allSheetsData.personalData.find(function(r){ return r.recordId && r.recordId.toString() === customerId; });
-        if(customer) $('#incomeName').val(customer.englishName || customer.fullNameNepali || '');
+        if(customer) $('#incomeName').val(customer.fullNameNepali || customer.englishName || '');
         else {
             var bill = allSheetsData.billing.find(function(r){ return r[40] && r[40].toString() === customerId; });
             if(bill) $('#incomeName').val(bill[2] || '');
         }
     });
 }
-    $('#incomeOverhead').on('change', function(){
-        var selectedHead = $(this).val();
-        if(!selectedHead){ return; }        
-        var incomeHeadData = allSheetsData.settingData.incomeHeadData || [];
-        var matchedItem = incomeHeadData.find(function(item){
-            return item.head === selectedHead;
-        });        
-        if(matchedItem && matchedItem.rate !== undefined && matchedItem.rate !== null && matchedItem.rate !== ''){
-            $('#incomeAmount').val(parseFloat(matchedItem.rate) || 0);
-        }
-    });
-}
-        
+
 function loadIncomeHeadsForForm(){
     var select = document.getElementById('incomeOverhead');
     if(!select) return;
     var currentVal = select.value;
-    select.innerHTML = '<option value="">Select Income Source</option>';    
+    select.innerHTML = '<option value="">Select Income Source</option>';
+    
     var data = allSheetsData.settingData.incomeHeadData || [];
     if(data && data.length > 0){
         data.forEach(function(item){ if(item.head) select.innerHTML += '<option value="'+item.head+'">'+item.head+' (Rs. '+item.rate+')</option>'; });
@@ -3348,7 +3337,8 @@ function submitIncomeForm(){
     
     var submitBtn = $('#incomeSubmitBtn');
     submitBtn.html('Saving...').prop('disabled', true);
-    showLoading();    
+    showLoading();
+    
     apiRequest('saveIncomeData', { data: data }).then(function(r){
         hideLoading();
         submitBtn.html('Submit').prop('disabled', false);
@@ -3393,7 +3383,8 @@ function deleteIncome(id){
 // ==================== EXPENSES TABLE ====================
 function renderExpensesTable(){
     var month = $('#expensesMonthSelect') ? $('#expensesMonthSelect').val() : $('#monthSelect').val();
-    var data = allSheetsData.expenses.filter(function(r){ return r[r.length-1] == month; });    
+    var data = allSheetsData.expenses.filter(function(r){ return r[r.length-1] == month; });
+    
     var columns = [
         {data: null, title: 'Actions', render: function(d,t,row){
             return '<div class="btn-group-sm">'+
@@ -3410,7 +3401,8 @@ function renderExpensesTable(){
         {data: null, title: 'Overhead', render: function(d,t,row){ return row[5]||''; }},
         {data: null, title: 'L/F', render: function(d,t,row){ return row[6]||''; }},
         {data: null, title: 'Amount', render: function(d,t,row){ return 'Rs. '+parseFloat(row[7]||0).toFixed(2); }}
-    ];    
+    ];
+    
     initDataTable('expensesTable', data, columns);
 }
 
@@ -3459,7 +3451,7 @@ function setupExpensesForm(){
         var customerId = $(this).val().trim();
         if(!customerId) return;
         var customer = allSheetsData.personalData.find(function(r){ return r.recordId && r.recordId.toString() === customerId; });
-        if(customer) $('#expensesName').val(customer.englishName || customer.fullNameNepali || '');
+        if(customer) $('#expensesName').val(customer.fullNameNepali || customer.englishName || '');
         else {
             var bill = allSheetsData.billing.find(function(r){ return r[40] && r[40].toString() === customerId; });
             if(bill) $('#expensesName').val(bill[2] || '');
@@ -4149,15 +4141,18 @@ var reportTypeMap = {
 
 function populateCustomerFilter(){
     var select = document.getElementById('reportCustomerFilter');
-    if(!select) return;    
+    if(!select) return;
+    
     var customers = new Set();
     (allSheetsData.personalData||[]).forEach(function(c){
         if(c.englishName) customers.add(c.englishName);
+        if(c.fullNameNepali) customers.add(c.fullNameNepali);
     });
     allSheetsData.billing.forEach(function(r){ if(r[2]) customers.add(r[2]); });
     allSheetsData.payment.forEach(function(r){ if(r[3]) customers.add(r[3]); });
     allSheetsData.income.forEach(function(r){ if(r[3]) customers.add(r[3]); });
-    allSheetsData.expenses.forEach(function(r){ if(r[3]) customers.add(r[3]); });    
+    allSheetsData.expenses.forEach(function(r){ if(r[3]) customers.add(r[3]); });
+    
     var val = select.value;
     select.innerHTML = '<option value="">All Customers</option>';
     customers.forEach(function(c){ select.innerHTML += '<option value="'+c.replace(/"/g,'&quot;')+'">'+c+'</option>'; });
@@ -4168,10 +4163,12 @@ function updatePeriodOptions(){
     var type = document.getElementById('reportTypeFilter').value;
     var periodSelect = document.getElementById('reportPeriodFilter');
     var customerGroup = document.getElementById('reportCustomerGroup');
-    var periodGroup = document.getElementById('reportPeriodGroup');    
+    var periodGroup = document.getElementById('reportPeriodGroup');
+    
     if(type === 'customer'){ customerGroup.style.display = 'block'; periodGroup.style.display = 'none'; return; }
     customerGroup.style.display = 'none';
-    periodGroup.style.display = 'block';    
+    periodGroup.style.display = 'block';
+    
     var options = [];
     if(type === 'monthly'){ monthOrder.forEach(function(m){ options.push({value: m, label: monthNames[m]}); }); }
     else if(type === 'quarterly'){ options = [{value:1,label:'Q1 (Poush-Chaitra)'},{value:2,label:'Q2 (Baishakh-Ashad)'},{value:3,label:'Q3 (Shrawan-Aswin)'},{value:4,label:'Q4 (Kartik-Mansir)'}]; }
