@@ -1018,27 +1018,46 @@
 
     <script>
               // ==================== API CONFIGURATION ====================
-        const API_URL = 'https://script.google.com/macros/s/AKfycbxu0vp9fpfnajZxpjwQrrHaCvSG32bH2sZ-CN0q0aIRrH5wMGFQNTPdv4LnXORJZucM/exec';      
         async function apiRequest(action, data = {}) {
-                const formData = new URLSearchParams();
-                formData.append('action', action);
-                for (const [key, value] of Object.entries(data)) {
-                    if (value !== null && value !== undefined) {
-                        if (typeof value === 'object') {
-                            formData.append(key, JSON.stringify(value));
-                        } else {
-                            formData.append(key, value);
-                        }
+            const formData = new URLSearchParams();
+            formData.append('action', action);
+            for (const [key, value] of Object.entries(data)) {
+                if (value !== null && value !== undefined) {
+                    if (typeof value === 'object') {
+                        formData.append(key, JSON.stringify(value));
+                    } else {
+                        formData.append(key, value);
                     }
                 }
-                const response = await fetch(API_URL, {
-                    method: 'POST',
-                    body: formData,
-                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
-                });
-                const text = await response.text();
-                return JSON.parse(text);
             }
+            const response = await fetch(API_URL, {
+                method: 'POST',
+                body: formData,
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+            });
+            const text = await response.text();
+            const parsed = JSON.parse(text);
+            return decodeObject(parsed);
+        } 
+        
+        function decodeText(text) {
+            if (text === null || text === undefined) return '';
+            return String(text).replace(/\+/g, ' ');
+        }
+        
+        function decodeObject(obj) {
+            if (obj === null || obj === undefined) return obj;
+            if (typeof obj === 'string') return decodeText(obj);
+            if (Array.isArray(obj)) return obj.map(decodeObject);
+            if (typeof obj === 'object') {
+                var out = {};
+                Object.keys(obj).forEach(function(k) {
+                    out[k] = decodeObject(obj[k]);
+                });
+                return out;
+            }
+            return obj;
+        }
 
         function showToast(message, type = 'info') {
             if (typeof toastr !== 'undefined') {
@@ -1583,14 +1602,7 @@ function getNepaliMonthIndex(date){ return date.getMonth() + 1; }
 // ==================== INITIALIZATION ====================
 $(document).ready(function(){
     populateMonthDropdowns();
-    updatePeriodOptions();
-    
-    $(document).on('blur', 'input[type="text"], textarea', function() {
-        var v = $(this).val();
-        if (v && v.indexOf('+') !== -1) {
-            $(this).val(v.replace(/\+/g, ' '));
-        }
-    });    
+    updatePeriodOptions();    
     apiRequest('getCompanyDetails').then(function(d){
         if(d){ companyDetails = d; updateCompanyDisplay(); }
     });    
