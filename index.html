@@ -1018,7 +1018,7 @@
 
     <script>
               // ==================== API CONFIGURATION ====================
-        const API_URL = 'https://script.google.com/macros/s/AKfycbyDhB870SfnXvyugeqdULjAZNaT7gWA34z6YJCQynE9zeicgIJ-M5kraSgjbUrEwIE/exec';      
+        const API_URL = 'https://script.google.com/macros/s/AKfycbxu0vp9fpfnajZxpjwQrrHaCvSG32bH2sZ-CN0q0aIRrH5wMGFQNTPdv4LnXORJZucM/exec';      
         async function apiRequest(action, data = {}) {
                 const formData = new URLSearchParams();
                 formData.append('action', action);
@@ -1044,7 +1044,7 @@
             if (typeof toastr !== 'undefined') {
                 toastr[type](message);
             } else {
-                console.log(type + ': ' + message);
+                throw new Error('this isnot loaded : ' + type + ': ' + message);
             }
         }
         // Complete Nepali calendar data for 2000-2100
@@ -1585,6 +1585,12 @@ $(document).ready(function(){
     populateMonthDropdowns();
     updatePeriodOptions();
     
+    $(document).on('blur', 'input[type="text"], textarea', function() {
+        var v = $(this).val();
+        if (v && v.indexOf('+') !== -1) {
+            $(this).val(v.replace(/\+/g, ' '));
+        }
+    });    
     apiRequest('getCompanyDetails').then(function(d){
         if(d){ companyDetails = d; updateCompanyDisplay(); }
     });    
